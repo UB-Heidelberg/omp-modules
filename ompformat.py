@@ -46,8 +46,6 @@ ONIX_OUTPUT_DATE_MAP = {
     "25": "%Y AH",
 }
 
-STRING_DATE_FORMATS = ['12', '32']
-
 ONIX_DATE_ROLES = {
     "01": current.T('Publication date'),    #Nominal date of publication.
     "02": current.T('Embargo date') ,   #If there is an embargo on retail sales in this market before a certain date, the date from which the embargo is lifted and retail sales are permitted.
@@ -134,54 +132,55 @@ def formatName(author_row, reverse=False):
     else:
         return "{}, {}".format(author_row.last_name, " ".join([author_row.first_name, author_row.middle_name]).strip())
     
-def formatPublicationDate(date_row, locale, publication_format):
+def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
+    """
+    Format different types of ONIX publication date info with an introductory phrase.
+    """
+    date = dateFromRow(date_row)
+    if date == datetime(1, 1, 1):
+        formatter = current.T('Published %(date)s.')
+        date = date_row.date
+        
+    if not f_out:
+        f_out = ONIX_OUTPUT_DATE_MAP.get(date_row.date_format, "%x")
+    
+    if (date-datetime.now()).days > 0:
+        # publication date in the future
+        formatter = current.T("To be published %(date_str)s. ## "+f_out)
+    else:
+        # publication date in the past
+        formatter = current.T("Published %(date_str)s. ## "+f_out)
+
+    return formatter % dict(date_str = dateToStr(date, locale, f_out))
+    
+def formatONIXDate(date_row, locale="de_DE", f_out=""):
     """
     Format different types of ONIX publication date info.
     """
-    date_formatted = formatDate(date_row, locale)
-    if not date_formatted:
-        # Unsupported date format
-        return ""
-    f_inp = ONIX_INPUT_DATE_MAP.get(date_row.date_format, None)
-    f_out = ONIX_OUTPUT_DATE_MAP.get(date_row.date_format, None)
-    if f_inp and f_out:
-        date = datetime.strptime(date_row.date, f_inp)
-        if (date-datetime.now()).days > 0:
-            # publication date in the future
-            formatter = current.T("%(pf_name)s to be published %(date)s. ## "+f_out)
-        else:
-            # publication date in the past
-            formatter = current.T("%(pf_name)s published %(date)s. ## "+f_out)
-    else:
-        formatter = current.T('Publication date %(pf_name)s %(date)s.')
-        
-    return formatter % dict(pf_name = publication_format.settings.getLocalizedValue('name', locale),
-                            date = date_formatted)
-    
-def formatDate(date_row, locale="de_DE"):
-    """
-    Format publication date.
-    """
-    date = ""
-    if date_row.date_format in STRING_DATE_FORMATS:
-        date = date_row.date
-    else:
-        f_inp = ONIX_INPUT_DATE_MAP.get(date_row.date_format, None)
-        f_out = ONIX_OUTPUT_DATE_MAP.get(date_row.date_format, None)
-        # save current locale
-        c_locale = getlocale(LC_TIME)
-        try:
-            setlocale(LC_TIME, (locale, 'UTF-8'))
-        except:
-            setlocale(LC_TIME, getdefaultlocale())
-        if f_inp and f_out:
-            date = datetime.strftime(datetime.strptime(date_row.date, f_inp), f_out)
-        # reset locale
-        setlocale(LC_TIME, c_locale)
+    date = dateFromRow(date_row)
+    if date == datetime(1, 1, 1):
+        # unknown input date format, return date as string
+        return date_row.date
+    if not f_out:
+        f_out = ONIX_OUTPUT_DATE_MAP.get(date_row.date_format, "%x")
 
+    return dateToStr(date, locale, f_out)
+
+def dateToStr(date, locale="de_DE", f_out="%x"):
+    # save current locale
+    c_locale = getlocale(LC_TIME)
+    try:
+        setlocale(LC_TIME, (locale, 'UTF-8'))
+    except:
+        setlocale(LC_TIME, getdefaultlocale())
+    date = datetime.strftime(date, f_out)
+    
+    # reset locale
+    setlocale(LC_TIME, c_locale)
+    
     return date
 
-def convertDate(date_row):
+def dateFromRow(date_row):
     """
     Convert OMP publication date to datetime object.
     """
@@ -190,9 +189,6 @@ def convertDate(date_row):
         return datetime.strptime(date_row.date, f_inp)
     else:
         return datetime(1, 1, 1)
-    
-def dateToString(datetime_obj, f_string="%x"):
-    return datetime.strftime(datetime_obj, f_string)
 
 def downloadLink(application, file_row):
     """
