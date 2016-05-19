@@ -429,3 +429,14 @@ class OMPDAL:
             & (r.representative_id_type == representative_id)
         )        
         return self.db(q).select(r.ALL)
+    
+    def getMetaDataPublishedDates(self, submission_id):
+        el = self.db.event_log
+        assoc_type_monograph = 1048585
+        
+        q = ((el.assoc_id == submission_id)
+             & (el.assoc_type == assoc_type_monograph)
+             & (el.message == 'submission.event.metadataPublished')
+            )
+        
+        return self.db(q).select(el.date_logged, orderby=el.date_logged)
