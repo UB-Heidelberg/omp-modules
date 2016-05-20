@@ -54,3 +54,76 @@ Contains formatting helper functions for
 * ...
 
 See docstrings for details.
+
+## OMP Stats
+ * is a  web2py module,  reads a json output  and converts into a  dynamic HTML Table
+ * any api service returning jsons in the following format is supported.  For a reference implementation please check [API](http://heiup.uni-heidelberg.de/cgi-bin/oastats-json.cgi?repo=omphp&type=json&ids=43-231-xml,43-230-pdf)
+
+'''
+{
+  "43-231-xml": {
+    "all_years": [
+      {
+        "volltext": "515",
+        "id": "43-231-xml",
+        "zeitraum": "16",
+        "frontdoor": "0"
+      },
+      {
+        "volltext": "507",
+        "id": "43-231-xml",
+        "frontdoor": "0",
+        "zeitraum": "15"
+      }
+    ]
+  }
+}
+'''
+
+### Installation
+  * add the following lines to you appconfig.ini, if not already defined. The id configuration is only necessary if you use the ub heidelberg api service, otherwise, please define your own relative script path. If you want to use a absolute path please change self.oas_server in the ompstats.py
+ 
+'''
+[statistik]
+id=omphp
+script=cgi-bin/oastats-json.cgi
+
+'''
+ * Add the follwing HTML snippet into the your view.
+
+'''
+  {{if stats.checkOASService():}}
+    {{file_types= ['xml','pdf']}}
+    <div id="oas-widget" class="applied-to-ojs">
+     <div class="btn btn-default" id="statistik-button">{{=T('Statistik since 07.03.16')}}</div> <br/>
+     <div style="display:none" class="table" id="oas">
+       <ul class="nav nav-tabs">
+         <li class="active"><a href="#full" data-toggle="tab"><i class="icon-briefcase"></i> {{=T('Book')}}</a></li>
+         <li class=""><a href="#chapters" data-toggle="tab">{{=T('Chapters')}}</a></li>
+       </ul>
+       <div class="tab-content">
+         <div class="tab-pane active" id="full">
+           <table class="table">
+             {{=stats.getFullHTMLTable(submission_id,file_types)}}
+           </table>
+         </div>
+         <div class="tab-pane" id="chapters">
+           <table class="table">  {{=stats.getChapterHTMLTable(submission_id, file_types) }}</table>
+         </div>
+       </div>
+     </div>
+    </div>
+    <script type="text/javascript">
+    $('#statistik-button').click(function(){
+    $('#oas').slideToggle()
+    });
+    </script>
+{{pass}}
+'''
+
+
+
+
+
+
+
