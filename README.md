@@ -59,7 +59,7 @@ See docstrings for details.
  * is a  web2py module,  reads a json output  and converts into a  dynamic HTML Table
  * any api service returning jsons in the following format is supported.  For a reference implementation please check [API](http://heiup.uni-heidelberg.de/cgi-bin/oastats-json.cgi?repo=omphp&type=json&ids=43-231-xml,43-230-pdf)
 
-'''
+```
 {
   "43-231-xml": {
     "all_years": [
@@ -78,20 +78,19 @@ See docstrings for details.
     ]
   }
 }
-'''
+```
 
 ### Installation
   * add the following lines to you appconfig.ini, if not already defined. The id configuration is only necessary if you use the ub heidelberg api service, otherwise, please define your own relative script path. If you want to use a absolute path please change self.oas_server in the ompstats.py
  
-'''
+```
 [statistik]
 id=omphp
 script=cgi-bin/oastats-json.cgi
-
-'''
+```
  * Add the follwing HTML snippet into the your view.
+```
 
-'''
   {{if stats.checkOASService():}}
     {{file_types= ['xml','pdf']}}
     <div id="oas-widget" class="applied-to-ojs">
@@ -119,9 +118,8 @@ script=cgi-bin/oastats-json.cgi
     });
     </script>
 {{pass}}
-'''
 
-
+```
 
 
 
