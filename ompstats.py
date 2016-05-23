@@ -20,8 +20,7 @@ class OMPStats:
     def __init__(self, conf, db, locale):
         self.locale = locale
         self.ompdal = OMPDAL(db, conf)
-        self.oas_server = 'http://heiup.uni-heidelberg.de/cgi-bin/oastats-json.cgi'
-        #self.oas_server = os.path.join('..','..','..',conf.take('statistik.script'))
+        self.oas_server = os.path.join('..','..','..',conf.take('statistik.script'))
         self.oas_id = conf.take('statistik.id')
 
     def checkOASService(self):
