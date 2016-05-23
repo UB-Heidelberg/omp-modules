@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 '''
 Copyright (c) 2015 Heidelberg University Library
 Distributed under the GNU GPL v3. For full terms see the file
@@ -51,17 +52,19 @@ class OMPStats:
             trs.append({self.getFilteredTitle(cs): stats})
         return trs, fids
 
-    def createChapterHTMLTable(self, trs, st, fs):
+    def createChapterHTMLTable(self,sid, trs, st, fs, style):
         '''
         creates HTML Table
         '''
 
         table = TABLE(
             _class="table",
-            _style="width: inherit; padding:0; font-size:11px")
+            _style=style)
         htr = TR()
         htr.append(TD())
-        [htr.append(TD(f))for f in fs]
+        for f in fs:
+          pfid = self.ompdal.getPublicationFormatByName(sid, f)
+          htr.append(TD(f)) if pfid else ''         
         table.append(htr)
         table = self.setTotalsToTable(table, st, trs)
         return table
@@ -86,23 +89,23 @@ class OMPStats:
 
         return trs, fids
 
-    def createFullHTMLTable(self, trs, st, fs):
+    def createFullHTMLTable(self, trs, st, fs ,style):
         '''
         creates html table for full files
         '''
         table = TABLE(
             _class="table",
-            _style="width: inherit; padding:0; font-size:15px")
+            _style=style)
         table = self.setTotalsToTable(table, st, trs)
         return table
 
-    def getChapterHTMLTable(self, sid, fs):
+    def getChapterHTMLTable(self, sid, fs, style):
         '''
         creates  HTML chapter table
         '''
         trs, fids = self.createChapterDict(sid, fs)
         st = self.getOASResponse(fids)
-        return self.createChapterHTMLTable(trs, st, fs)
+        return self.createChapterHTMLTable(sid, trs, st, fs, style)
 
     def getFilteredTitle(self, cs):
         '''
@@ -115,13 +118,13 @@ class OMPStats:
             except:
                 return {}
 
-    def getFullHTMLTable(self, sid, fs):
+    def getFullHTMLTable(self, sid, fs ,style):
         '''
         creates  chapter table
         '''
         trs, fids = self.createFullDict(sid, fs)
         st = self.getOASResponse(fids)
-        return self.createFullHTMLTable(trs, st, fs)
+        return self.createFullHTMLTable(trs, st, fs, style)
 
     def getOASResponse(self, fids):
         '''
@@ -138,8 +141,7 @@ class OMPStats:
         calculate some for a  file id
         '''
         sum = 0
-        if k in st.keys():
-          for k2 in st[k]['all_years']:
+        for k2 in st[k]['all_years']:
             sum += int(k2['volltext'])
         return sum
 
