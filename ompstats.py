@@ -140,8 +140,9 @@ class OMPStats:
         calculate some for a  file id
         '''
         sum = 0
-        for k2 in st[k]['all_years']:
-            sum += int(k2['volltext'])
+        if k in st.keys():
+          for k2 in st[k]['all_years']:
+           sum += int(k2['volltext'])
         return sum
 
     def setTotalsToTable(self, table, st, trs):
