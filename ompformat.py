@@ -227,7 +227,11 @@ def coverImageLink(request, press_id, submission_id):
     return cover_image
 
 def getSeriesImageLink(request, press_id, image):
-    return URL(request.application, 'static', join('files/presses', str(press_id), 'series', image[4:].split(';')[1].split('"')[1]))
+    try :
+        return URL(request.application, 'static', join('files/presses', str(press_id), 'series', image[4:].split(';')[1].split('"')[1]))
+    except:
+        return ''
+
 
 def haveMultipleAuthors(chapters):
     """
