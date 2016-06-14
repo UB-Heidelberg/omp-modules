@@ -204,7 +204,7 @@ def downloadLink(application, file_row):
                        ]
     file_name = '-'.join([str(i) for i in file_name_items])+'.'+file_type
     
-    if file_type == 'html':
+    if file_type == 'xml' or file_type == 'html':
         op = 'index'
     else:
         op = 'download'
