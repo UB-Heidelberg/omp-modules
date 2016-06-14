@@ -219,19 +219,24 @@ def coverImageLink(request, press_id, submission_id):
     """
     Check, if cover image for a given submission exists, and build link.
     """
-    cover_image=''
-    path=request.folder+join('static', 'files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'
+    cover_image = ''
+    path = request.folder+join('static', 'files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'
     for t in ['jpg','png','gif']:
         if exists(path+t):
             cover_image = URL(request.application, 'static', join('files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'+t)
     return cover_image
 
 def getSeriesImageLink(request, press_id, image):
-    try :
-        return URL(request.application, 'static', join('files/presses', str(press_id), 'series', image[4:].split(';')[1].split('"')[1]))
+    """
+    Build series image link.
+    """
+    series_image = ''
+    try:
+        series_image = URL(request.application, 'static', join('files', 'presses', str(press_id), 'series', image[4:].split(';')[1].split('"')[1]))
     except:
-        return ''
-
+        pass
+    
+    return series_image
 
 def haveMultipleAuthors(chapters):
     """
