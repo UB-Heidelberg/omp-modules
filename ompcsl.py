@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (c) 2015 Heidelberg University Library
+Copyright (c) 2016 Heidelberg University Library
 Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 """
 
 import datetime
-from gluon.html import *
-from gluon.serializers import json
-from gluon import current
 
 
 def csl_date(date):
@@ -65,7 +62,7 @@ def build_csl_data(submission, authors, date_published, doi, press_settings, loc
 
     """
     csl_data = {
-        'id': submission.attributes.submission_id,
+        'id': str(submission.attributes.submission_id),
         'type': 'book',
         'title': ' '.join([submission.settings.getLocalizedValue('prefix', locale), submission.settings.getLocalizedValue('title', locale)]),
         'publisher-place': press_settings.getLocalizedValue('location', ''),
@@ -77,6 +74,7 @@ def build_csl_data(submission, authors, date_published, doi, press_settings, loc
         csl_data['editor'] = [csl_name(e) for e in editors]
     subtitle = submission.settings.getLocalizedValue('subtitle', locale)
     if subtitle:
+        # Add subtitle to title, because CSL-JSON does not define a separate field for subtitle
         csl_data['title'] += ': ' + subtitle
     if series:
         csl_data['collection-title'] = " ".join([series.settings.getLocalizedValue('prefix', locale), series.settings.getLocalizedValue('title', locale)])
@@ -86,49 +84,4 @@ def build_csl_data(submission, authors, date_published, doi, press_settings, loc
         csl_data['collection-number'] = submission.attributes.series_position
     if doi:
         csl_data['DOI'] = doi
-    # Add subtitle to title, because CSL-JSON does not define a separate field for subtitle
     return csl_data
-
-
-def render_citeproc_javascript(book_data, style, lang, target_element):
-    return XML('<script type="application/json" id="book-csl-json">' + json(book_data) + '</script>' +
-               """<script>
-    function initCiteproc(styleID, lang, processorReady) {
-        // Get the CSL style as a serialized string of XML
-        var citeprocSys = {
-            retrieveLocale: function (lang){ return this.localeXml },
-            retrieveItem: function(id){ return $.parseJSON($('#book-csl-json').html()) }
-            };
-        if(lang == 'de') {
-            lang = 'de-DE';
-        }
-        else if (lang == 'en') {
-            lang = 'en-US';
-        }
-        else {
-            console.log('Unsupported locale: ' + lang);
-        }
-        $.when(
-          // Get the CSL style
-          $.get('""" + URL('static', 'files/csl/') + """' + styleID + '.csl', function( data ) {
-              citeprocSys.style = data;
-          }),
-          // Get the locale file
-          $.get('""" + URL('static', 'files/csl/locales-') + """' + lang + '.xml', function(localeText) {
-              citeprocSys.localeXml = localeText;
-          }, 'text')
-        ).then(function() {
-            processorReady(new CSL.Engine(citeprocSys, citeprocSys.style, lang, true));
-        });
-    }
-
-    function renderCitation(citeproc) {
-        citeproc.updateItems([""" + str(book_data['id']) + """]);
-        // Function returns an array, the first
-        var bibHtml = citeproc.makeBibliography()[1][0];
-        $('""" + target_element + """').html(bibHtml);
-    }
-    $(function() {
-        initCiteproc('""" + style + "', '" + lang + """', renderCitation);
-    });
-</script>""")
