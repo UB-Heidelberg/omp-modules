@@ -194,7 +194,7 @@ def downloadLink(application, file_row):
     """
     Generate download link from file info.
     """
-    file_type = file_row.file_name.split('.').pop().strip().lower()
+    file_type = file_row.original_file_name.split('.').pop().strip().lower()
     file_name_items = [file_row.submission_id,
                        file_row.genre_id,
                        file_row.file_id,
