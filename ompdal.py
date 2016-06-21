@@ -401,6 +401,15 @@ class OMPDAL:
         res= self.db(q).select(sf.ALL, orderby=sf.revision)
         if res:
             return res.last()
+        
+    def getSubmissionFileSettings(self, file_id):
+        """
+        Get settings for a given submission file.
+        """
+        sfs = self.db.submission_file_settings
+        q = (sfs.file_id == file_id)
+        
+        return self.db(q).select(sfs.ALL)
 
     def getPublicationDatesByPublicationFormat(self, publication_format_id):
         """
