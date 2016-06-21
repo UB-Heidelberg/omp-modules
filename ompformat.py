@@ -190,7 +190,7 @@ def dateFromRow(date_row):
     else:
         return datetime(1, 1, 1)
 
-def downloadLink(request, file_row, vgwPublicCode=None, vgwServer=None):
+def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
     """
     Generate download link from file info.
     """
@@ -213,14 +213,12 @@ def downloadLink(request, file_row, vgwPublicCode=None, vgwServer=None):
     if vgwPublicCode:
         if not vgwServer:
             vgwServer = "http://vg08.met.vgwort.de/na"
-        redirect = join(vgwServer, vgwPublicCode)+"?l="
+        redirect = join(vgwServer, vgwPublicCode)+"?l="+url
     return redirect+URL(
+        a=request.application,
         c='reader',
         f=op,
-        r=request,
         args=[file_row.submission_id, file_name],
-        scheme=True, 
-        host=True
         )
     
 def coverImageLink(request, press_id, submission_id):
