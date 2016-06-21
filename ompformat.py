@@ -212,7 +212,7 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
     redirect = ""
     if vgwPublicCode:
         if not vgwServer:
-            vgwServer = "http://vg08.met.vgwort.de/na"
+            vgwServer = "http://vg07.met.vgwort.de/na"
         redirect = join(vgwServer, vgwPublicCode)+"?l="+url
     return redirect+URL(
         a=request.application,
