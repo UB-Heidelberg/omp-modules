@@ -43,7 +43,7 @@ class OMPStats:
                         sid, f).first()['publication_format_id']
                     fid = self.ompdal.getLatestRevisionOfChapterFileByPublicationFormat(
                         ch['chapter_id'], pfid)['file_id']
-                    fname = '-'.join([str(sid), str(fid), f])
+                    fname = '-'.join([str(sid), str(fid), self.getNormalizedHTMLName(f)])
                     fids.append(fname)
                     stats[fname] = ''
                 except:
@@ -79,7 +79,7 @@ class OMPStats:
             try:
                 fid = self.ompdal.getLatestRevisionOfFullBookFileByPublicationFormat(
                     sid, fn.first()["publication_format_id"])
-                fname = '-'.join([str(sid), str(fid['file_id']), f])
+                fname = '-'.join([str(sid), str(fid['file_id']), self.getNormalizedHTMLName(f)])
                 fids.append(fname)
                 stats[fname] = ''
                 trs.append({f: stats})
@@ -135,6 +135,10 @@ class OMPStats:
         r = urllib2.urlopen(req)
         return json.loads(r.read())
 
+    
+    def getNormalizedHTMLName(self, f):
+      return 'xml' if f=='html' else f
+    
     def getTotalForFileID(self, k, st):
         '''
         calculate some for a  file id
