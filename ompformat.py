@@ -264,6 +264,9 @@ def haveMultipleAuthors(chapters):
 def seriesPositionCompare(s1, s2):
     p1 = s1.attributes.series_position
     p2 = s2.attributes.series_position
+    # Cannot compare to empty value
+    if not p1 or not p2:
+        return 0
     try:
         # Try casting to integer
         p1 = float(p1)
@@ -271,16 +274,16 @@ def seriesPositionCompare(s1, s2):
     except ValueError:
         try:
             # Try finding an integer substring
-            p1 = int(findall("[0-9]+", p1).pop())
-            p2 = int(findall("[0-9]+", p2).pop())
+            p1 = int(findall("[0-9]+", str(p1)).pop())
+            p2 = int(findall("[0-9]+", str(p2)).pop())
         except IndexError:
             # No integer value found – keep position values as is for comparison
             pass
-            
+    
     if p1 > p2:
-	return 1
+        return 1
     elif p2 > p1:
         return -1
     else:
-	return 0
+        return 0
 
