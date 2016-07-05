@@ -153,10 +153,15 @@ class OMPStats:
         '''
         add rows to the table
         '''
+        total = 0
         for i in range(len(trs)):
             for k, v in trs[i].iteritems():
                 tr = TR(TD(k))
                 for k2 in v.keys():
-                    tr.append(TD(self.getTotalForFileID(k2, st)))
+                    t = self.getTotalForFileID(k2, st)
+                    tr.append(TD(t))
+                    total += t
+                    
                 table.append(tr)
+                table.append(TR(TD(T('Total'),TD(total))))
         return table
