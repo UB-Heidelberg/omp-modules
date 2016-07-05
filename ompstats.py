@@ -163,5 +163,5 @@ class OMPStats:
                     total += t
                     
                 table.append(tr)
-        table.append(TR(TD(current.T('Total'),TD(total))))
+            table.append(TR(TD(current.T('Total'),TD(total))))
         return table
