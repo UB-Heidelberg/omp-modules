@@ -13,7 +13,7 @@ import urllib2
 from ompdal import OMPDAL
 from gluon.html import *
 import os.path
-
+from gluon import current
 
 class OMPStats:
 
@@ -163,5 +163,5 @@ class OMPStats:
                     total += t
                     
                 table.append(tr)
-                table.append(TR(TD(T('Total'),TD(total))))
+        table.append(TR(TD(current.T('Total'),TD(total))))
         return table
