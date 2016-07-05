@@ -65,7 +65,11 @@ class OMPStats:
           pfid = self.ompdal.getPublicationFormatByName(sid, f)
           htr.append(TD(f)) if pfid else ''         
         table.append(htr)
-        table = self.setTotalsToTable(table, st, trs)
+        table, total = self.setTotalsToTable(table, st, trs)
+        str = TR(current.T('Total'))
+        for s in total:
+          str.append(TD(total[s]))
+        table.append(str)  
         return table
 
     def createFullDict(self, sid, fs):
@@ -95,7 +99,7 @@ class OMPStats:
         table = TABLE(
             _class="table",
             _style=style)
-        table = self.setTotalsToTable(table, st, trs)
+        table,total = self.setTotalsToTable(table, st, trs)
         return table
 
     def getChapterHTMLTable(self, sid, fs, style):
@@ -153,15 +157,20 @@ class OMPStats:
         '''
         add rows to the table
         '''
-        total = 0
+        total = {}
         for i in range(len(trs)):
+            
             for k, v in trs[i].iteritems():
                 tr = TR(TD(k))
                 for k2 in v.keys():
                     t = self.getTotalForFileID(k2, st)
                     tr.append(TD(t))
-                    total += t
-                    
+                    ftype = k2.rsplit('-', 1)[1]
+                    if  ftype in total.keys():
+                      total[ftype] = total[ftype] + t
+                    else:
+                      total[ftype] = t
                 table.append(tr)
-            table.append(TR(TD(current.T('Total'),TD(total))))
-        return table
+            
+              
+        return table, total
