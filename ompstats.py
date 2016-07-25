@@ -151,6 +151,9 @@ class OMPStats:
     def getNormalizedHTMLName(self, f):
       return 'xml' if f=='html' else f
     
+    def getNormalizedXMLName(self, f):
+      return 'html' if f=='xml' else f
+    
     def getTotalForFileID(self, k, st):
         '''
         calculate some for a  file id
@@ -169,7 +172,7 @@ class OMPStats:
         itr = 0
         htr = TR(TD())
         for f in sorted(vl):
-          htr.append(TD(self.getNormalizedHTMLName(f))) 
+          htr.append(TD(self.getNormalizedXMLName(f))) 
         table.append(htr)        
         for i in range(len(trs)):
             
@@ -199,7 +202,7 @@ class OMPStats:
         itr = 0
         htr = TR()
         for f in sorted(vl):
-          htr.append(TD(self.getNormalizedHTMLName(f))) 
+          htr.append(TD(self.getNormalizedXMLName(f))) 
         table.append(htr)        
         for i in range(len(trs)):
             
