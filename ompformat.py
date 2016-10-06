@@ -72,35 +72,23 @@ def formatCitation(title, subtitle, authors, editors, year, location, press_name
     """
     cit, et_al, edt = "", "", ""
     if editors:
-        if len(editors) > max_contrib:
-            et_al = " et al."
-        contrib = editors[:max_contrib]
+        contributors = editors
         if len(editors) == 1:
             edt = " "+current.T.translate('(ed.)', {})
         else:
             edt = " "+current.T.translate('(eds)', {})
-    elif authors:
-        if len(authors) > max_contrib:
-            et_al = " et al"
-        contrib = authors[:max_contrib]
-    
-    num_contrib = len(contrib)
-    if num_contrib == 1:
-        cit = formatName(contrib.pop().attributes)
-    elif num_contrib == 2:
-        f_str = "{} "+current.T.translate('and', {})+" {}"
-        cit = f_str.format(formatName(contrib[0].attributes, reverse=True),
-                                 formatName(contrib[1].attributes))
-    elif num_contrib == 3:
-        f_str = "{}, {} "+current.T.translate('and', {})+" {}"
-        cit = f_str.format(formatName(contrib[0].attributes, reverse=True),
-                                     formatName(contrib[1].attributes),
-                                     formatName(contrib[2].attributes))
     else:
-        f_str = "{} "+current.T.translate('and', {})+" {}"
-        cit = f_str.format(", ".join([formatName(c.attributes, reverse=True) for c in contrib[:-1]]),
-                                     formatName(contrib[-1].attributes))
-    
+        contributors = authors
+    if len(contributors) > max_contrib:
+        contributors = contributors[:1]
+        et_al = " et al."
+    if len(contributors) == 1:
+        cit = formatName(contributors.pop().attributes, reverse=True)
+    else:
+        cit = ",  ".join([formatName(c.attributes, reverse=True) for c in contributors[:-1]])
+        cit = " ".join(
+            [cit, current.T.translate('and', {}), formatName(contributors[-1].attributes, reverse=True)])
+
     cit = "".join([cit, et_al, edt])+": "
     cit += title
     if subtitle:
@@ -119,9 +107,13 @@ def formatContributors(contributors=[], max_contributors=3, et_al=True):
     """
     Format a list of contributors.
     """
-    res = ", ".join([formatName(c.attributes) for c in contributors[:max_contributors]])
-    if len(contributors) > max_contributors and et_al == True:
+    if len(contributors) > max_contributors:
+        # Only output the first contributor
+        res = formatName(contributors[0].attributes)
+        if et_al:
             res += " et al."
+    else:
+        res = ", ".join([formatName(c.attributes) for c in contributors])
     return res
 
 def formatName(author_row, reverse=False):
