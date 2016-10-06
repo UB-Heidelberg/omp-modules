@@ -85,7 +85,7 @@ def formatCitation(title, subtitle, authors, editors, year, location, press_name
     if len(contributors) == 1:
         cit = formatName(contributors.pop().attributes, reverse=True)
     else:
-        cit = ",  ".join([formatName(c.attributes, reverse=True) for c in contributors[:-1]])
+        cit = " , ".join([formatName(c.attributes, reverse=True) for c in contributors[:-1]])
         cit = " ".join(
             [cit, current.T.translate('and', {}), formatName(contributors[-1].attributes, reverse=True)])
 
