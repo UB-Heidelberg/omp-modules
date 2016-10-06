@@ -61,13 +61,15 @@ class OMPStats:
             _style=style)
         htr = TR()
         htr.append(TD())
+        vl = {}
         for f in fs:
           pfid = self.ompdal.getPublicationFormatByName(sid, f)
-          htr.append(TD(f)) if pfid else ''         
-        table.append(htr)
-        table, total = self.setTotalsToTable(table, st, trs)
+          f = self.getNormalizedHTMLName(f)
+          vl[f] = None
+          
+        table, total = self.setTotalsToTable(table, st, trs, vl)
         str = TR(current.T('Total'))
-        for s in total:
+        for s in sorted(vl):
           str.append(TD(total[s]))
         table.append(str)  
         return table
@@ -99,7 +101,13 @@ class OMPStats:
         table = TABLE(
             _class="table",
             _style=style)
-        table,total = self.setTotalsToTable(table, st, trs)
+        vl = {}
+         
+        for f in fs:
+          f = self.getNormalizedHTMLName(f)
+          vl[f] = None
+        
+        table,total = self.setTotalsToFullTable(table, st, trs, vl)
         return table
 
     def getChapterHTMLTable(self, sid, fs, style):
@@ -143,6 +151,9 @@ class OMPStats:
     def getNormalizedHTMLName(self, f):
       return 'xml' if f=='html' else f
     
+    def getNormalizedXMLName(self, f):
+      return 'html' if f=='xml' else f
+    
     def getTotalForFileID(self, k, st):
         '''
         calculate some for a  file id
@@ -153,24 +164,62 @@ class OMPStats:
            sum += int(k2['volltext'])
         return sum
 
-    def setTotalsToTable(self, table, st, trs):
+    def setTotalsToTable(self, table, st, trs ,vl):
         '''
         add rows to the table
         '''
         total = {}
+        itr = 0
+        htr = TR(TD())
+        for f in sorted(vl):
+          htr.append(TD(self.getNormalizedXMLName(f))) 
+        table.append(htr)        
         for i in range(len(trs)):
             
             for k, v in trs[i].iteritems():
                 tr = TR(TD(k))
                 for k2 in v.keys():
                     t = self.getTotalForFileID(k2, st)
-                    tr.append(TD(t))
+                    itr += 1
                     ftype = k2.rsplit('-', 1)[1]
                     if  ftype in total.keys():
                       total[ftype] = total[ftype] + t
                     else:
                       total[ftype] = t
-                table.append(tr)
-            
+                    vl[ftype]= t
+            for  j in sorted(vl):
+              tr.append(TD(vl[j]))
+            table.append(tr)
+
               
         return table, total
+
+    def setTotalsToFullTable(self, table, st, trs ,vl):
+        '''
+        add rows to the table
+        '''
+        total = {}
+        itr = 0
+        htr = TR()
+        for f in sorted(vl):
+          htr.append(TD(self.getNormalizedXMLName(f))) 
+        table.append(htr)        
+        for i in range(len(trs)):
+            
+            for k, v in trs[i].iteritems():
+                tr = TR()
+                for k2 in v.keys():
+                    t = self.getTotalForFileID(k2, st)
+                    itr += 1
+                    ftype = k2.rsplit('-', 1)[1]
+                    if  ftype in total.keys():
+                      total[ftype] = total[ftype] + t
+                    else:
+                      total[ftype] = t
+                    vl[ftype]= t
+        for  j in sorted(vl):
+          if vl[j]:
+            tr.append(TD(vl[j]))
+        table.append(tr)
+        return table, total
+              
