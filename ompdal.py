@@ -125,7 +125,7 @@ class OMPDAL:
             orderby=a.seq
         )
         
-    def getActualAuthorsBySubmission(self, submission_id, filter_browse=False):
+    def getActualAuthorsBySubmission(self, submission_id, filter_browse=True):
         """
         Get all authors associated with the specified submission with chapter author role.
         """
@@ -141,7 +141,7 @@ class OMPDAL:
             q &= a.include_in_browse == 1
         return self.db(q).select(self.db.authors.ALL, orderby=self.db.authors.seq)
             
-    def getEditorsBySubmission(self, submission_id):
+    def getEditorsBySubmission(self, submission_id, filter_browse=True):
         """
         Get all authors associated with the specified submission with editor role.
         """
@@ -151,14 +151,11 @@ class OMPDAL:
             return []
         
         a = self.db.authors
-        q = ((a.submission_id == submission_id) 
-            & (a.user_group_id == editor_group_id)
-        )
-        
-        return self.db(q).select(
-            self.db.authors.ALL,
-            orderby=self.db.authors.seq
-        )
+        q = (a.submission_id == submission_id) & (a.user_group_id == editor_group_id)
+        if filter_browse:
+            q &= a.include_in_browse == 1
+
+        return self.db(q).select(self.db.authors.ALL, orderby=self.db.authors.seq)
         
     def getAuthorsByChapter(self, chapter_id):
         """
