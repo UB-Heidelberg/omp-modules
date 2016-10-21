@@ -5,6 +5,7 @@ Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
 
+
 class OMPSettings:
     def __init__(self, rows=[]):
         self._settings = dict()
@@ -22,12 +23,14 @@ class OMPSettings:
         
     def getValues(self, setting_name):
         return self._settings.get(setting_name, {})
-    
+
+
 class OMPItem:
     def __init__(self, row, settings=OMPSettings(), associated_items={}):
         self.attributes = row
         self.settings = settings
         self.associated_items = associated_items
+
 
 class OMPDAL:
     """
@@ -109,36 +112,34 @@ class OMPDAL:
         
         return self.db(q).select(self.db.submission_settings.ALL)
 
-    def getAuthorsBySubmission(self, submission_id):
+    def getAuthorsBySubmission(self, submission_id, filter_browse=False):
         """
         Get all authors associated with the specified submission regardless of their role.
         """
         a = self.db.authors
         q = (a.submission_id == submission_id)
-        
+        if filter_browse:
+            q &= (a.include_in_browse == True)
         return self.db(q).select(
             a.ALL,
             orderby=a.seq
         )
         
-    def getChapterAuthorsBySubmission(self, submission_id):
+    def getActualAuthorsBySubmission(self, submission_id, filter_browse=False):
         """
         Get all authors associated with the specified submission with chapter author role.
         """
         try:
-            chapter_author_group_id = self.conf.take('omp.author_id')
+            # Try to extract a list
+            author_group_ids = self.conf.take('omp.author_ids', cast=lambda s: map(int, s.split(',')))
         except:
             return []
         
         a = self.db.authors
-        q = ((a.submission_id == submission_id) 
-            & (a.user_group_id == chapter_author_group_id)
-        )
-        
-        return self.db(q).select(
-            self.db.authors.ALL,
-            orderby=self.db.authors.seq
-        )
+        q = (a.submission_id == submission_id) & a.user_group_id.belongs(author_group_ids)
+        if filter_browse:
+            q &= a.include_in_browse == 1
+        return self.db(q).select(self.db.authors.ALL, orderby=self.db.authors.seq)
             
     def getEditorsBySubmission(self, submission_id):
         """
