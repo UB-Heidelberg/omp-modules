@@ -399,7 +399,7 @@ class OMPDAL:
         res= self.db(q).select(sf.ALL, orderby=sf.revision)
         if res:
             return res.last()
-    def getLatestRevisionOfReviewFileByPublicationFormat(self, submission_id, publication_format_id):
+    def getReviewFilesByPublicationFormat(self, submission_id, publication_format_id):
             """
             Get the latest revision of a file of a review for a given publication format.
             """
@@ -415,8 +415,7 @@ class OMPDAL:
             )
             
             res= self.db(q).select(sf.ALL, orderby=sf.revision)
-            if res:
-                return res.last()        
+            return res        
     def getSubmissionFileSettings(self, file_id):
         """
         Get settings for a given submission file.
