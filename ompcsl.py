@@ -136,6 +136,9 @@ def csl_name(author):
     """
     if not isinstance(author, OMPItem):
         raise TypeError('author must be an OMPItem')
+    given = author.attributes.first_name
+    if author.attributes.middle_name:
+        given += " " + author.attributes.middle_name
     return {'family': author.attributes.last_name,
-            'given': ' '.join([author.attributes.first_name, author.attributes.middle_name]),
+            'given': given,
             'suffix': author.attributes.suffix}
