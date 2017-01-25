@@ -223,7 +223,28 @@ class OMPDAL:
         
         res = self.db(q).select(ser.ALL)
         if res:
-            return res.first()        
+            return res.first()
+
+    def getCategoryBySubmissionId(self, submission_id):
+        """
+        Get the assigned Category of submission
+        """
+        cat = self.db.submission_categories
+
+        q = (cat.submission_id == submission_id)
+
+        res = self.db(q).select(cat.ALL)
+        if res:
+            return res.first()
+
+    def getCategorySettings(self, category_id):
+        """
+        Get settings for a given category
+        """
+        cs = self.db.category_settings
+        q = (cs.category_id == category_id)
+
+        return self.db(q).select(cs.ALL)
 
     def getSeries(self, series_id):
         """
