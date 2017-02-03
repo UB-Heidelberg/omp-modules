@@ -225,6 +225,17 @@ class OMPDAL:
         if res:
             return res.first()
 
+    def getCategoriesByPress(self, press_id):
+        """
+        Get all categories in  press.
+        """
+        c = self.db.categories
+        q = (c.press_id == press_id)
+
+        return self.db(q).select(
+            c.ALL
+        )
+
     def getCategoryBySubmissionId(self, submission_id):
         """
         Get the assigned Category of submission
