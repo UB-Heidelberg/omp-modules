@@ -72,7 +72,21 @@ class OMPDAL:
         )
         
         return self.db(q).select(s.ALL, orderby=~s.date_submitted)
-    
+
+    def getSubmissionsByCategory(self, category_id, ignored_submission_id=-1, status=3):
+        """
+        Get all submissions in a category with the given status (default: 3=published).
+        """
+        s = self.db.submissions
+        sc = self.db.submission_categories
+
+        q = ((s.category_id == category_id)
+             & (s.submission_id != ignored_submission_id)
+             & (s.status == status)
+             )
+
+        return self.db(q).select(s.ALL, orderby=~s.series_position)
+
     def getSubmissionsBySeries(self, series_id, ignored_submission_id=-1, status=3):
         """
         Get all submissions in a series with the given status (default: 3=published).
@@ -222,6 +236,18 @@ class OMPDAL:
         q = ((sub.submission_id == submission_id) & (ser.series_id == sub.series_id))
         
         res = self.db(q).select(ser.ALL)
+        if res:
+            return res.first()
+
+
+    def getCategoryByPathAndPress(self, category_path, press_id):
+        """
+        Get the category by path in the given press (unique).
+        """
+        c = self.db.categories
+        q = ((c.path == category_path) & (c.press_id == press_id))
+
+        res = self.db(q).select(c.ALL)
         if res:
             return res.first()
 
