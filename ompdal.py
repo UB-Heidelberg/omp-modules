@@ -80,12 +80,13 @@ class OMPDAL:
         s = self.db.submissions
         sc = self.db.submission_categories
 
-        q = ((s.category_id == category_id)
+        q = ((sc.category_id == category_id)
+             & (sc.submission_id == s.submission_id)
              & (s.submission_id != ignored_submission_id)
              & (s.status == status)
              )
 
-        return self.db(q).select(s.ALL, orderby=~s.series_position)
+        return self.db(q).select(s.ALL)
 
     def getSubmissionsBySeries(self, series_id, ignored_submission_id=-1, status=3):
         """
