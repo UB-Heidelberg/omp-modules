@@ -303,6 +303,19 @@ class OMPDAL:
         
         return self.db(q).select(u.ALL)
 
+
+    def getLocalizedCategorySettings(self, category_id, setting_name, locale):
+        """
+        Get row for a given category
+        """
+        cs = self.db.category_settings
+        q = ((cs.locale == locale)
+            & (cs.category_id == category_id)
+            & (cs.setting_name == setting_name)
+             )
+        return self.db(q).select(cs.ALL).first()
+
+
     def getLocalizedSeriesSettings(self, series_id, locale):
         """
         Get row for a given series id.
