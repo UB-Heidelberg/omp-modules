@@ -284,6 +284,13 @@ class OMPDAL:
 
         return self.db(q).select(cs.ALL)
 
+    def getCategory(self, category_id):
+        """
+        Get row for a given series id.
+        """
+        return self.db.categories[category_id]
+
+
     def getSeries(self, series_id):
         """
         Get row for a given series id.
