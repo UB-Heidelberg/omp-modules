@@ -61,7 +61,7 @@ class OMPDAL:
         """
         return self.db.submissions[submission_id]
     
-    def getSubmissionsByPress(self, press_id, ignored_submission_id=-1, status=3, limit_by=(0, 20)):
+    def getSubmissionsByPress(self, press_id, ignored_submission_id=-1, limit_by=(0, 20), status=3):
         """
         Get all submissions in press with the given status (default: 3=published).
         """
