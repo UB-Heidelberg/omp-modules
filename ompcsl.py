@@ -55,6 +55,7 @@ class OMPCSL():
                        self.dal.getActualAuthorsBySubmission(submission_id, filter_browse=True)]
 
         date_published = None
+        date_first_published = None
         pdf = self.dal.getPublicationFormatByName(submission_id, self.config.take('omp.doi_format_name')).first()
         # Get DOI from the format marked as DOI carrier
         doi = OMPSettings(self.dal.getPublicationFormatSettings(pdf.publication_format_id)).getLocalizedValue(
@@ -63,9 +64,10 @@ class OMPCSL():
         # Get the OMP publication date (column publication_date contains latest catalog entry edit date.) Try:
         # 1. Custom publication date entered for a publication format calles "PDF"
         if pdf:
-            publication_dates = self.dal.getPublicationDatesByPublicationFormat(pdf.publication_format_id)\
-                .find(lambda pd: pd.role == '01')
-            date_published = dateFromRow(publication_dates.first()) if publication_dates else None
+            date_first_published = dateFromRow(
+                self.dal.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='11').first())
+            date_published = dateFromRow(
+                self.dal.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='01').first())
         # 2. Date on which the catalog entry was first published
         if not date_published:
             date_row = self.dal.getMetaDataPublishedDates(submission_id).first()
@@ -88,6 +90,8 @@ class OMPCSL():
             'issued': csl_date(date_published),
             'author': [csl_name(a) for a in authors]
         }
+        if date_first_published:
+            csl_data['original-date'] = csl_date(date_first_published)
         if editors:
             csl_data['editor'] = [csl_name(e) for e in editors]
         subtitle = submission.settings.getLocalizedValue('subtitle', self.locale)
