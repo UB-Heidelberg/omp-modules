@@ -14,7 +14,7 @@ class OMPCSL():
         if not isinstance(dal, OMPDAL):
             raise TypeError('dal must be an OMPDAL')
         self.locale = locale
-        self.dal = dal
+        self.db = dal
         self.config = config
 
     def load_csl_data(self, submission_id):
@@ -39,46 +39,46 @@ class OMPCSL():
         """
 
         press_id = self.config.take('omp.press_id')
-        press_settings = OMPSettings(self.dal.getPressSettings(press_id))
+        press_settings = OMPSettings(self.db.getPressSettings(press_id))
 
         # Get basic submission info (check, if submission is associated with the actual press and if the submission has been published)
-        submission = self.dal.getPublishedSubmission(submission_id, press_id=press_id)
+        submission = self.db.getPublishedSubmission(submission_id, press_id=press_id)
         if not submission:
             raise ValueError("Unknown submission_id: " + submission_id)
-        submission = OMPItem(submission, OMPSettings(self.dal.getSubmissionSettings(submission_id)))
+        submission = OMPItem(submission, OMPSettings(self.db.getSubmissionSettings(submission_id)))
 
-        editors = [OMPItem(e, OMPSettings(self.dal.getAuthorSettings(e.author_id))) for e in
-                   self.dal.getEditorsBySubmission(submission_id)]
+        editors = [OMPItem(e, OMPSettings(self.db.getAuthorSettings(e.author_id))) for e in
+                   self.db.getEditorsBySubmission(submission_id)]
 
         # Do not mention authors if the submission has editors
-        authors = [] if editors else [OMPItem(a, OMPSettings(self.dal.getAuthorSettings(a.author_id))) for a in
-                       self.dal.getActualAuthorsBySubmission(submission_id, filter_browse=True)]
+        authors = [] if editors else [OMPItem(a, OMPSettings(self.db.getAuthorSettings(a.author_id))) for a in
+                                      self.db.getActualAuthorsBySubmission(submission_id, filter_browse=True)]
 
         date_published = None
         date_first_published = None
-        pdf = self.dal.getPublicationFormatByName(submission_id, self.config.take('omp.doi_format_name')).first()
+        pdf = self.db.getPublicationFormatByName(submission_id, self.config.take('omp.doi_format_name')).first()
         # Get DOI from the format marked as DOI carrier
-        doi = OMPSettings(self.dal.getPublicationFormatSettings(pdf.publication_format_id)).getLocalizedValue(
+        doi = OMPSettings(self.db.getPublicationFormatSettings(pdf.publication_format_id)).getLocalizedValue(
                 "pub-id::doi", "") if pdf else None # DOI always has empty self.locale
 
         # Get the OMP publication date (column publication_date contains latest catalog entry edit date.) Try:
         # 1. Custom publication date entered for a publication format calles "PDF"
         if pdf:
-            date_first_published = dateFromRow(
-                self.dal.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='11').first())
+            date_first_published = self.db.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='11')\
+                .first()
             date_published = dateFromRow(
-                self.dal.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='01').first())
+                self.db.getPublicationDatesByPublicationFormat(pdf.publication_format_id, role='01').first())
         # 2. Date on which the catalog entry was first published
         if not date_published:
-            date_row = self.dal.getMetaDataPublishedDates(submission_id).first()
+            date_row = self.db.getMetaDataPublishedDates(submission_id).first()
             date_published = date_row.date_logged if date_row else None
         # 3. Date on which the submission status was last modified (always set)
         if not date_published:
             date_published = submission.attributes.date_status_modified
 
-        series = self.dal.getSeriesBySubmissionId(submission_id)
+        series = self.db.getSeriesBySubmissionId(submission_id)
         if series:
-            series = OMPItem(series, OMPSettings(self.dal.getSeriesSettings(series.series_id)))
+            series = OMPItem(series, OMPSettings(self.db.getSeriesSettings(series.series_id)))
 
         csl_data = {
             'id': str(submission.attributes.submission_id),
@@ -91,7 +91,7 @@ class OMPCSL():
             'author': [csl_name(a) for a in authors]
         }
         if date_first_published:
-            csl_data['original-date'] = csl_date(date_first_published)
+            csl_data['original-date'] = csl_date(date_first_published.date)
         if editors:
             csl_data['editor'] = [csl_name(e) for e in editors]
         subtitle = submission.settings.getLocalizedValue('subtitle', self.locale)
@@ -101,8 +101,9 @@ class OMPCSL():
         if series:
             csl_data['collection-title'] = " ".join([series.settings.getLocalizedValue('prefix', self.locale),
                                                      series.settings.getLocalizedValue('title', self.locale)])
-            if series.settings.getLocalizedValue('subtitle', self.locale):
-                csl_data['collection-title'] += " – " + series.settings.getLocalizedValue('subtitle', self.locale)
+            series_subtitle = series.settings.getLocalizedValue('subtitle', self.locale)
+            if series_subtitle:
+                csl_data['collection-title'] += " – " + series_subtitle
         if submission.attributes.series_position:
             csl_data['collection-number'] = submission.attributes.series_position
         if doi:
