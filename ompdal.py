@@ -40,6 +40,16 @@ class OMPDAL:
         self.db = db
         self.conf = conf
         
+
+    def getPresses(self):
+        """
+        Get all  enabled presses
+        """
+        ps = self.db.presses
+        q = (ps.enabled == 1)
+
+        return self.db(q).select(ps.ALL)
+
     def getPress(self, press_id):
         """
         Get row for a given press id.
