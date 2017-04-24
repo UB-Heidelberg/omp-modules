@@ -11,38 +11,41 @@ from datetime import datetime
 
 class Browser:
 
-
-
-    def __init__(self, submissions, current, locale, p, sort_by, filters):
+    def __init__(self, s, current, locale, p, sort_by, f):
         self.current = current
-        self.filters = {'category':['Wissenschaft']}
+
+        self.filters = dict(x.split('=') for x in f.split(',')) if len(f) > 0 else {}
+
         self.per_page = p
         self.locale = locale
         self.sort_by = sort_by
-
-        def category(s):
-            return s.associated_items.get('category').settings.getLocalizedValue('title', self.locale)  if s.associated_items.get('category') else False
-
         self.submission_sort = {
-            'category': (category),
+            'category': (lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False),
             'date': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
             'title': (lambda s: s.settings.getLocalizedValue('title', self.locale).lower()),
         }
 
+        self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
+            'title', self.locale) for x in s if x.associated_items.get('category'))
+        self.submissions = self.filter_submissions(s) if self.filters else s
 
-        #self.filter_functions = {
-        #    'category': (lambda s : cat_filter(s,v))
-        #}
-        #submissions = filter(lambda s:   datetime.strptime(str(y),'%Y') <  min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])) <  datetime.strptime(str(y+1),'%Y') , submissions)
-
-
-
-        self.total = len(submissions) / p + 1 if len(submissions) % p > 0 else len(submissions) / p
+        self.t = len(self.submissions)
+        self.total = self.t / p + 1 if self.t % p > 0 else self.t / p
         self.navigation_select = self.get_navigation_select()
         self.navigation_list = self.get_navigation_list()
         self.sort_select = self.get_sort_select()
+        self.filter_select = self.get_filter_select()
 
-        self.submissions = submissions
+    def filter_submissions(self, s):
+        def category(s, v):
+            return str(s.associated_items.get('category').settings.getLocalizedValue('title', self.locale)) == str(
+                v) if s.associated_items.get('category') else False
+
+        s = filter(lambda s: category(s, self.filters.get('category')), s)
+
+        # submissions = filter(lambda s:   datetime.strptime(str(y),'%Y') <  min(s.associated_items.get('publication_dates',
+        # [datetime(1, 1, 1)])) <  datetime.strptime(str(y+1),'%Y') , submissions)
+        return s
 
     def get_navigation_list(self):
         li = []
@@ -62,19 +65,6 @@ class Browser:
         button = TAG.button(current.T("Results per Page"), SPAN(_class='caret'), **button_cs)
         return DIV(button, ul, _class="btn-group pull-right")
 
-
-    def filter_submissions(self, submissions):
-        def category(s, v):
-            return str(s.associated_items.get('category').settings.getLocalizedValue('title', self.locale)) == str(v) if s.associated_items.get('category') else False
-        return filter(lambda s: category(s, 'Wissenschaft'), submissions)
-
-
-    def process_submissions(self, submissions):
-        submissions = sorted(submissions, key=self.submission_sort.get(self.sort_by), reverse=False)
-        submissions = submissions[self.current * self.per_page:(self.current + 1) * self.per_page]
-        return submissions
-
-
     def get_sort_select(self, ul_class="btn-group pull-right"):
         li = [LI(A(i.capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in sorted(self.submission_sort.keys())]
         ul = UL(li, _class="dropdown-menu")
@@ -82,3 +72,23 @@ class Browser:
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
         button = TAG.button(current.T("sort by"), SPAN(_class='caret'), **button_cs)
         return DIV(button, ul, _class=ul_class)
+
+    def process_submissions(self, s):
+        s = sorted(s, key=self.submission_sort.get(self.sort_by), reverse=False)
+        s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
+        return s
+
+    def get_filter_select(self, ul_class="btn-group pull-right"):
+
+        o = [OPTION(current.T('All'), _value=URL('index?filter_by=[]'))]
+        if self.filters.get('category') is None:
+            o[0].attributes['_selected'] = True
+
+        for s in self.categories:
+            opt = OPTION(s, _value=URL('index?filter_by=[category=' + str(s) + ']'))
+            if s == self.filters.get('category'):
+                opt.attributes['_selected'] = True
+            o.append(opt)
+
+        select = SELECT(o, _class="selectpicker btn btn-default", _onchange="location=this.value;")
+        return DIV(select,  _class=ul_class)
