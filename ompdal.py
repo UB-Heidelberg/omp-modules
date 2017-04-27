@@ -514,15 +514,17 @@ class OMPDAL:
         
         return self.db(q).select(sfs.ALL)
 
-    def getPublicationDatesByPublicationFormat(self, publication_format_id):
+    def getPublicationDatesByPublicationFormat(self, publication_format_id, role=None):
         """
         Get all publication dates associated with a given publication format.
         """
         pd = self.db.publication_dates
         q = (pd.publication_format_id == publication_format_id)
-        
+        if role:
+            q &= (pd.role == role)
+
         return self.db(q).select(pd.ALL)
-    
+
     def getIdentificationCodesByPublicationFormat(self, publication_format_id):
         """
         Get the identification codes (ISBN) associated with a given publication format.

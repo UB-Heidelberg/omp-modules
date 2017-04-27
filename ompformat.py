@@ -66,7 +66,8 @@ ONIX_DATE_ROLES = {
     "27": current.T('Preorder embargo date'),    #Earliest date a retail ‘preorder’ can be placed (where this is distinct from the public announcement date). In the absence of a preorder embargo, advance orders can be placed as soon as metadata is available to the consumer (this would be the public announcement date, or in the absence of a public announcement date, the earliest date metadata is available to the retailer). 
 }
 
-def formatCitation(title, subtitle, authors, editors, year, location, press_name, doi, locale, series_name="", series_pos="", max_contrib=3):
+def formatCitation(title, subtitle, authors, editors, date_published, location, press_name, doi, locale,
+                   series_name="", series_pos="", max_contrib=3, date_first_published=None):
     """
     Format a citation in CML.
     """
@@ -94,10 +95,12 @@ def formatCitation(title, subtitle, authors, editors, year, location, press_name
     if subtitle:
         cit += ": "+subtitle
 
-    cit += ", "+location+": "+press_name+", "+year
+    cit += ", "+location+": "+press_name + ", " + dateToStr(date_published, locale, "%Y")
+    if date_first_published and date_first_published.year != date_published.year:
+        cit += dateToStr(date_first_published, locale, " (%Y)")
+
     if series_name and series_pos:
-        f_str = " ({}, "+current.T.translate('Vol.', {})+" {})"
-        cit += f_str.format(series_name, series_pos)
+        cit += " ({}, {} {})".format(series_name, current.T.translate('Vol.', {}), series_pos)
     cit += "."
     if doi:
         cit += " DOI: "
@@ -177,6 +180,8 @@ def dateFromRow(date_row):
     """
     Convert OMP publication date to datetime object.
     """
+    if not date_row:
+        return None
     f_inp = ONIX_INPUT_DATE_MAP.get(date_row.date_format, None)
     if f_inp:
         return datetime.strptime(date_row.date, f_inp)
