@@ -6,11 +6,13 @@ LICENSE.md
 '''
 from gluon import HTTP,BR
 
+#TODO reactivate for solr
+'''
 try:
-    import sunburnt
+    import sunburnts
 except ImportError as err:
     raise HTTP(400, '{} <br/> {}'.format(err, "Install using sudo pip install sunburnt"))
-
+'''
 class OMPSOLR:
     def __init__(self,db,conf, **other_kwargs):
         self.db = db
