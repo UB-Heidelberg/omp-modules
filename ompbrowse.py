@@ -78,7 +78,7 @@ class Browser:
         s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
 
-    def get_filter_select(self, ul_class="btn-group pull-right"):
+    def get_filter_select(self, ul_class="btn-group pull-left"):
 
         o = [LI(A(current.T('All'), _href=URL('index?filter_by=[]')))]
         opt = [LI(A(s, _href=URL('index?filter_by=[category=' + str(s) + ']'))) for s in self.categories]
