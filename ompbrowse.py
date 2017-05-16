@@ -63,7 +63,7 @@ class Browser:
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
         button = TAG.button(current.T("Results per Page"), SPAN(_class='caret'), **button_cs)
-        return DIV(button, ul, _class="btn-group pull-right")
+        return DIV(button, ul, _class="btn-group pull-left")
 
     def get_sort_select(self, ul_class="btn-group pull-right"):
         li = [LI(A(i.capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in sorted(self.submission_sort.keys())]
@@ -78,7 +78,7 @@ class Browser:
         s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
 
-    def get_filter_select(self, ul_class="btn-group pull-left"):
+    def get_filter_select(self, ul_class="btn-group pull-right"):
 
         o = [LI(A(current.T('All'), _href=URL('index?filter_by=[]')))]
         opt = [LI(A(s, _href=URL('index?filter_by=[category=' + str(s) + ']'))) for s in self.categories]
