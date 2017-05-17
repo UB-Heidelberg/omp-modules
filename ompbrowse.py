@@ -32,8 +32,8 @@ class Browser:
 
         self.t = len(self.submissions)
         self.total = self.t / p + 1 if self.t % p > 0 else self.t / p
-        self.navigation_select = self.get_navigation_select() if self.total> 20 else DIV()
-        self.navigation_list = self.get_navigation_list() if self.total> 20 else DIV()
+        self.navigation_select = self.get_navigation_select() if self.t> 20 else DIV()
+        self.navigation_list = self.get_navigation_list() if self.t> 20 else DIV()
         self.sort_select = self.get_sort_select()
         self.filter_select = self.get_filter_select()
 
