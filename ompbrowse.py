@@ -66,7 +66,7 @@ class Browser:
         return DIV(button, ul, _class="btn-group pull-left")
 
     def get_sort_select(self, ul_class="btn-group pull-right"):
-        li = [LI(A(i.capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in sorted(self.submission_sort.keys())]
+        li = [LI(A(current.T(i).capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in sorted(self.submission_sort.keys())]
         ul = UL(li, _class="dropdown-menu")
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
