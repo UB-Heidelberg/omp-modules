@@ -21,7 +21,8 @@ class Browser:
         self.sort_by = sort_by
         self.submission_sort = {
             'category': (lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False),
-            'date': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
+            'oldest_to_newest': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
+            'newest_to_oldest': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
             'title': (lambda s: s.settings.getLocalizedValue('title', self.locale).lower()),
         }
 
@@ -74,7 +75,8 @@ class Browser:
         return DIV(button, ul, _class=ul_class)
 
     def process_submissions(self, s):
-        s = sorted(s, key=self.submission_sort.get(self.sort_by), reverse=False)
+        reverse = True if 'newest_to_oldest' in self.sort_by else False
+        s = sorted(s, key=self.submission_sort.get(self.sort_by), reverse=reverse)
         s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
 
