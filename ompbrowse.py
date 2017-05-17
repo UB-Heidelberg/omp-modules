@@ -32,8 +32,8 @@ class Browser:
 
         self.t = len(self.submissions)
         self.total = self.t / p + 1 if self.t % p > 0 else self.t / p
-        self.navigation_select = self.get_navigation_select()
-        self.navigation_list = self.get_navigation_list()
+        self.navigation_select = self.get_navigation_select() if self.total> 20 else DIV()
+        self.navigation_list = self.get_navigation_list() if self.total> 20 else DIV()
         self.sort_select = self.get_sort_select()
         self.filter_select = self.get_filter_select()
 
@@ -58,7 +58,7 @@ class Browser:
         return TAG.nav(UL(li, _class="pagination pull-left"), **al)
 
     def get_navigation_select(self):
-        per_page = [2, 3, 4]
+        per_page = [10, 20, 30]
         li = [LI(A(i, _href=URL('index?per_page=' + str(i)))) for i in per_page]
         ul = UL(li, _class="dropdown-menu")
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
