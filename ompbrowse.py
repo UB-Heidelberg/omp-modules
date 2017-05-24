@@ -7,6 +7,7 @@ LICENSE.md
 from gluon.html import *
 from gluon import current
 from datetime import datetime
+import collections
 
 
 class Browser:
@@ -19,12 +20,7 @@ class Browser:
         self.per_page = p
         self.locale = locale
         self.sort_by = sort_by
-        self.submission_sort = {
-            'category': (lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False),
-            'oldest_to_newest': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
-            'newest_to_oldest': (lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))),
-            'title': (lambda s: s.settings.getLocalizedValue('title', self.locale).lower()),
-        }
+        self.submission_sort = self.get_submssion_sort_dict()
 
         self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
             'title', self.locale) for x in s if x.associated_items.get('category'))
@@ -36,6 +32,17 @@ class Browser:
         self.navigation_list = self.get_navigation_list() if self.t> 20 else DIV()
         self.sort_select = self.get_sort_select()
         self.filter_select = self.get_filter_select()
+
+    def get_submssion_sort_dict(self):
+        submission_sort = collections.OrderedDict()
+        submission_sort['newest_to_oldest'] = lambda s: min(
+            s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))
+        submission_sort['oldest_to_newest'] = lambda s: min( s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))
+        # TODO may not work with editors
+        submission_sort['authors'] = lambda s: s.associated_items.get('authors',[])[0].attributes.get('last_name','')
+        submission_sort['title'] = lambda s: s.settings.getLocalizedValue('title', self.locale).lower()
+        submission_sort['category'] = lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False
+        return submission_sort
 
     def filter_submissions(self, s):
         def category(s, v):
@@ -67,7 +74,7 @@ class Browser:
         return DIV(button, ul, _class="btn-group pull-left")
 
     def get_sort_select(self, ul_class="btn-group pull-right"):
-        li = [LI(A(current.T(i).capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in sorted(self.submission_sort.keys())]
+        li = [LI(A(current.T(i).capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in (self.submission_sort.keys())]
         ul = UL(li, _class="dropdown-menu")
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
