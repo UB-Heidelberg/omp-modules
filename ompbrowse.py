@@ -39,7 +39,7 @@ class Browser:
             s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))
         submission_sort['oldest_to_newest'] = lambda s: min( s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))
         # TODO may not work with editors
-        submission_sort['authors'] = lambda s: s.associated_items.get('authors',[])[0].attributes.get('last_name','')
+        submission_sort['author'] = lambda s: s.associated_items.get('authors',[])[0].attributes.get('last_name','')
         submission_sort['title'] = lambda s: s.settings.getLocalizedValue('title', self.locale).lower()
         submission_sort['category'] = lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False
         return submission_sort
