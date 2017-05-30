@@ -488,6 +488,26 @@ class OMPDAL:
         res= self.db(q).select(sf.ALL, orderby=sf.revision)
         if res:
             return res.last()
+
+    def getLatestRevisionOfEBook(self, submission_id, publication_format_id):
+        """
+        Get the latest revision of a file of genre "Book" for a given publication format.
+        """
+        try:
+            monograph_type_id = self.conf.take('omp.epub_monograph_type_id')
+        except:
+            return []
+        sf = self.db.submission_files
+        q = ((sf.submission_id == submission_id)
+             & (sf.genre_id == monograph_type_id)
+             & (sf.file_stage == 10)
+             & (sf.assoc_id == publication_format_id)
+             )
+
+        res = self.db(q).select(sf.ALL, orderby=sf.revision)
+        if res:
+            return res.last()
+
     def getReviewFilesByPublicationFormat(self, submission_id, publication_format_id):
             """
             Get the latest revision of a file of a review for a given publication format.
@@ -505,6 +525,7 @@ class OMPDAL:
             
             res= self.db(q).select(sf.ALL, orderby=sf.revision)
             return res        
+
     def getSubmissionFileSettings(self, file_id):
         """
         Get settings for a given submission file.

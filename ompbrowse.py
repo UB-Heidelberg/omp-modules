@@ -34,6 +34,7 @@ class Browser:
         self.filter_select = self.get_filter_select()
 
     def get_submssion_sort_dict(self):
+        # TODO do not change order  ,if changed heiup/views/catalog/index.html change del b.filter_select !!!!
         submission_sort = collections.OrderedDict()
         submission_sort['newest_to_oldest'] = lambda s: min(
             s.associated_items.get('publication_dates', [datetime(1, 1, 1)]))
