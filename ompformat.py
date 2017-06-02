@@ -87,7 +87,8 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
         cit = formatName(contributors[0].attributes, reverse=True)
     else:
         cit = " , ".join([formatName(c.attributes, reverse=True) for c in contributors[:-1]])
-        cit = " ".join(
+        if contributors:
+            cit = " ".join(
             [cit, current.T.translate('and', {}), formatName(contributors[-1].attributes, reverse=True)])
 
     cit = "".join([cit, et_al, edt])+": "
