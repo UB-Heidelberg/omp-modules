@@ -75,9 +75,9 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
     if editors:
         contributors = list(editors)
         if len(editors) == 1:
-            edt = " "+current.T.translate('(ed.)', {})
+            edt = " "+current.T.translate('(Ed.)', {})
         else:
-            edt = " "+current.T.translate('(eds)', {})
+            edt = " "+current.T.translate('(Eds.)', {})
     else:
         contributors = list(authors)
     if len(contributors) > max_contrib:
