@@ -192,7 +192,7 @@ class OMPDAL:
             & (a.author_id == sca.author_id)
         )
         
-        return self.db(q).select(a.ALL)
+        return self.db(q).select(a.ALL, orderby=sca.seq)
         
     def getAuthor(self, author_id):
         """
