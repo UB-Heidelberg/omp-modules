@@ -96,7 +96,8 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
     if subtitle:
         cit += ": "+subtitle
 
-    cit += ", "+location+": "+press_name + ", " + dateToStr(date_published, locale, "%Y")
+    #cit += ", "+location+": "+press_name + ", " + dateToStr(date_published, locale, "%Y")
+    cit += ", {}: {}, {}".format(location,press_name,dateToStr(date_published, locale, "%Y"))
     if date_first_published and date_first_published.year != date_published.year:
         cit += dateToStr(date_first_published, locale, " (%Y)")
 
@@ -170,8 +171,10 @@ def dateToStr(date, locale="de_DE", f_out="%x"):
         setlocale(LC_TIME, (locale, 'UTF-8'))
     except:
         setlocale(LC_TIME, getdefaultlocale())
-    date = datetime.strftime(date, f_out)
-    
+    try:
+        date = datetime.strftime(date, f_out)
+    except:
+        pass
     # reset locale
     setlocale(LC_TIME, c_locale)
     
