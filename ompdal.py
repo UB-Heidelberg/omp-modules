@@ -273,6 +273,18 @@ class OMPDAL:
             c.ALL
         )
 
+
+    def getCategoriesBySeries(self, series_id):
+        """
+        Get the assigned Category of series
+        """
+        cat = self.db.series_categories
+
+        q = (cat.series_id == series_id)
+
+        return  self.db(q).select(cat.ALL)
+
+
     def getCategoryBySubmissionId(self, submission_id):
         """
         Get the assigned Category of submission
