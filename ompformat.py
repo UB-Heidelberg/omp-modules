@@ -188,7 +188,10 @@ def dateFromRow(date_row):
         return None
     f_inp = ONIX_INPUT_DATE_MAP.get(date_row.date_format, None)
     if f_inp:
-        return datetime.strptime(date_row.date, f_inp)
+        try:
+            return datetime.strptime(date_row.date, f_inp)
+        except ValueError as e:
+            raise ValueError('date_row.date: ' + date_row.date + ' does not match format' + f_inp)
     else:
         return datetime(1, 1, 1)
 
