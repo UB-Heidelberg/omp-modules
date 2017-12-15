@@ -102,11 +102,22 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
         cit += dateToStr(date_first_published, locale, " (%Y)")
 
     if series_name and series_pos:
-        cit += " ({}, {} {})".format(series_name, current.T.translate('Vol.', {}), series_pos)
+        cit += " ({}, {})".format(series_name, formatSeriesPosition(series_pos))
     cit += "."
     if doi:
         cit += " DOI: "
     return cit
+
+
+def formatSeriesPosition(series_pos):
+    if series_pos[:1].isdigit():
+        # Add translated Vol. for numerical series position
+        return " ".join((current.T.translate('Vol.', {}), series_pos))
+    else:
+        # Add translation of prefix from series_pos string
+        parts = series_pos.split(' ')
+        return " ".join((current.T(parts[0], lazy=False), parts[1]))
+
 
 def formatContributors(contributors=[], max_contributors=3, et_al=True):
     """
