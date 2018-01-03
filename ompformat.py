@@ -5,7 +5,7 @@ Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
 
-from html import URL, I
+from gluon.html import URL, I
 from gluon import current
 from datetime import datetime
 from locale import getlocale, setlocale, getdefaultlocale, LC_TIME
