@@ -127,14 +127,15 @@ class SiteMap:
 
     def create_static_map(self):
 
-        dirs = self.read_configuration().get('directories')
+
+        dirs = self.read_configuration().get('directories') if self.read_configuration() else []
         paths = list(map(lambda x: x["path"], dirs))
         file_list = self.remove_unwanted_files(self.get_files())
 
         for item in xrange(len(file_list)):
             d = file_list[item][0].split('/')[1]
             if d in paths:
-                j = filter(lambda x: x['path'] == d, dirs)
+                j = filter(lambda x: x['path'] == d, dirs) if dirs else d
                 priority = j[0]['priority'] if j else 0.5
                 file_list[item] = file_list[item] + (priority,)
 
