@@ -31,12 +31,13 @@ class Templates:
 
         try:
             loc = '{}{}'.format(myconf['web']['url'], loc)
+
         except  KeyError:
             print('web.url not defined in appconfig.ini')
 
         t = Template(
             '<url>'
-            '<loc>/${loc}</loc>'
+            '<loc>${loc}</loc>'
             '<lastmod>$lastmod</lastmod>'
             '<changefreq>$changefreq</changefreq>'
             '<priority>$priority</priority>'
