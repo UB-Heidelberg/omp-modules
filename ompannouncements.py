@@ -6,6 +6,7 @@ Created on 11 Jan 2018
 '''
 
 from ompdal import OMPDAL
+from gluon.html import DIV,H5,IMG,P,URL,XML
 
 
 class Announcements:
@@ -35,7 +36,13 @@ class Announcements:
 
     def get_news(self):
 
-        name = 'Aktuelles' if self.locale == 'de_DE' else 'News'
+
+        if self.locale == 'de_DE':
+            name = 'Aktuelles'
+        elif self.locale == 'en_US':
+            name ='news'
+        else:
+            name = ''
 
         return self.get_announcements_by_type_name(name)
 
@@ -54,13 +61,15 @@ class Announcements:
 
     def create_news_list(self):
 
-        news = self.get_news().as_list()
+        news = self.get_news()
+        if news :
+            return list(map(lambda e: self.create_news(e), news.as_list()))
+        else:
+            return []
 
-        return list(map(lambda e: self.create_news(e['announcement_id']), news))
+    def create_news(self, news):
 
-    def create_news(self, news_id):
-
-        n = self.ompdal.getAnnouncementSettings(news_id).as_list()
+        n = self.ompdal.getAnnouncementSettings(news['announcement_id']).as_list()
 
         t= list(filter(lambda e: e['locale'] == self.locale and e['setting_name'] == 'title', n))
         title = t[0]['setting_value'] if t else ''
@@ -68,8 +77,22 @@ class Announcements:
         ds = list(filter(lambda e: e['locale'] == self.locale and e['setting_name'] == 'descriptionShort', n))
         description_short = ds[0]['setting_value'] if ds else ''
 
-        return (title, description_short)
+        div = self.news_block(description_short, news, title)
+        return div
 
+    def news_block(self, description_short, news, title):
+
+        img_url = URL('static', 'images/press/home/heiup_aktuelles.png')
+        div_img = DIV(IMG(_src=img_url, _style="width: 50px;"),
+                      _class="media-left pull-left")
+        posted__date = news['date_posted'].date()
+        div_date = P(posted__date.strftime("%d.%m.%Y "), _class="media-heading")
+        div_heading = H5(XML(title))
+        div_short_descrpition = P(XML(description_short), _class="boxText")
+        div_body = DIV(div_date, div_heading, div_short_descrpition, _class="media-body")
+        div = DIV(div_img, div_body, _class = "media")
+
+        return div
 
 
 if __name__ == '__main__':
