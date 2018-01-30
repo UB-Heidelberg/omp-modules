@@ -88,7 +88,7 @@ class Announcements:
         posted__date = news['date_posted'].date()
         div_date = P(posted__date.strftime("%d.%m.%Y "), _class="media-heading")
         div_heading = H5(XML(title))
-        div_short_descrpition = P(XML(description_short), _class="boxText")
+        div_short_descrpition = DIV(XML(description_short), _class="boxText")
         div_body = DIV(div_date, div_heading, div_short_descrpition, _class="media-body")
         div = DIV(div_img, div_body, _class = "media")
 
