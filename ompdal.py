@@ -42,6 +42,14 @@ class OMPDAL:
 
 
 
+    def getAnnouncementsByPress(self, press_id):
+        """
+        Get announcement by press
+        """
+        a = self.db.announcements
+
+        return self.db(a.assoc_id == press_id).select(a.ALL, orderby=~a.date_posted)
+
 
     def getAnnouncementsByType(self, t):
         """
@@ -72,13 +80,13 @@ class OMPDAL:
 
         return self.db.announcement_types[type_id]
 
-    def getAnnouncementTypeSettings(self):
+    def getAnnouncementTypeSettings(self, type_id):
         """
         Get Announcement type settings
         """
         ats = self.db.announcement_type_settings
-        q = (ats.type_id)
-        return self.db(q).select(ats.ALL)
+
+        return self.db(ats.type_id == type_id).select(ats.ALL)
 
 
 
