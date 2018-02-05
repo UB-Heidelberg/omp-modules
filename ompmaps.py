@@ -97,7 +97,6 @@ class SiteMap:
     def url_is_ok(self, u):
         try:
             a = urlopen(u)
-            print(a.getcode())
             if a.getcode() == 200:
                 return True
             else:
@@ -110,7 +109,6 @@ class SiteMap:
         file_list=  self.create_static_map()+self.create_monographs() + self.create_series()
         file_list = list(map(lambda  x: (self.http_url(x[0]), x[1]), file_list))
         for s in file_list:
-            print(s)
             if not self.url_is_ok(s[0]):
                 file_list.remove(s)
                 print(s)
