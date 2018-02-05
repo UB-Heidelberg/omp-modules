@@ -9,7 +9,7 @@ Created on 11 Jan 2018
 import datetime
 import json
 import os
-from os.path import  join
+from os.path import join
 from string import Template
 
 from ompdal import OMPDAL
@@ -20,18 +20,19 @@ ompdal = OMPDAL(db, myconf)
 class Templates:
 
     def __init__(self):
-        pass
+        self.ignore_apps = ['heiup']
 
     def url(self, x):
 
-        loc = x[0]
         lastmod = x[1]
         change_frequency = 'weekly'
         priority = x[2] if len(x) == 3 else 0.5
 
         try:
-            loc = '{}{}'.format(myconf['web']['url'], loc)
-
+            if myconf['web']['application'] not in self.ignore_apps:
+                loc = '{}/{}{}'.format(myconf['web']['url'], myconf['web']['application'], x[0])
+            else:
+                loc = '{}{}'.format(myconf['web']['url'], x[0])
         except  KeyError:
             print('web.url not defined in appconfig.ini')
 
@@ -72,13 +73,15 @@ class SiteMap:
         submissions = ompdal.getSubmissionsByPress(self.press_id).as_list()
 
         return list(
-            map(lambda x: ('/catalog/book/{}'.format(x['submission_id']), x['last_modified'].date(), self.monographs_priority), submissions))
+            map(lambda x: (
+            '/catalog/book/{}'.format(x['submission_id']), x['last_modified'].date(), self.monographs_priority),
+                submissions))
 
     def create_series(self):
 
         series = ompdal.getSeriesByPress(self.press_id).as_list()
         series_map = list(
-            map(lambda x: ('/series/{}'.format(x['path']),datetime.datetime.now().date(),  self.series_priority),
+            map(lambda x: ('/series/{}'.format(x['path']), datetime.datetime.now().date(), self.series_priority),
                 series))
         series_info_map = list(
             map(lambda x: ('/series/info/{}'.format(x['path']),
@@ -128,7 +131,6 @@ class SiteMap:
 
     def create_static_map(self):
 
-
         dirs = self.read_configuration().get('directories') if self.read_configuration() else []
         paths = list(map(lambda x: x["path"], dirs))
         file_list = self.remove_unwanted_files(self.get_files())
@@ -142,8 +144,8 @@ class SiteMap:
 
         return file_list
 
-
     def create_sitempap_file(self):
+
         f = open(join(s.static_path, 'sitemap.xml'), 'w')
         f.write(s.create_sitemap())
         f.close()
