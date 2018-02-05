@@ -11,6 +11,7 @@ import json
 import os
 from os.path import join
 from string import Template
+from urllib2 import urlopen
 
 from ompdal import OMPDAL
 
@@ -20,21 +21,15 @@ ompdal = OMPDAL(db, myconf)
 class Templates:
 
     def __init__(self):
-        self.ignore_apps = ['heiup']
+        pass
 
     def url(self, x):
-
+        loc = x[0]
         lastmod = x[1]
         change_frequency = 'weekly'
         priority = x[2] if len(x) == 3 else 0.5
 
-        try:
-            if myconf['web']['application'] not in self.ignore_apps:
-                loc = '{}/{}{}'.format(myconf['web']['url'], myconf['web']['application'], x[0])
-            else:
-                loc = '{}{}'.format(myconf['web']['url'], x[0])
-        except  KeyError:
-            print('web.url not defined in appconfig.ini')
+
 
         t = Template(
             '<url>'
@@ -67,6 +62,7 @@ class SiteMap:
         self.views_path = '{}/{}'.format(self.path, 'views')
         self.monographs_priority = 0.9
         self.series_priority = 0.9
+        self.ignore_apps = ['heiup']
 
     def create_monographs(self):
 
@@ -91,13 +87,33 @@ class SiteMap:
 
         return series_map + series_info_map
 
+    def http_url(self,x):
+        if myconf['web']['application'] not in self.ignore_apps:
+            loc = '{}/{}{}'.format(myconf['web']['url'], myconf['web']['application'], x)
+        else:
+            loc = '{}{}'.format(myconf['web']['url'], x)
+        return loc
+
+    def url_is_ok(self, u):
+        try:
+            a = urlopen(u)
+            print(a.getcode())
+            if a.getcode() == 200:
+                return True
+            else:
+                return False
+        except:
+            return False
+
+
     def create_sitemap(self):
-
-        file_list = self.create_monographs(
-        ) + self.create_static_map(
-        ) + self.create_series(
-        )
-
+        file_list=  self.create_static_map()+self.create_monographs() + self.create_series()
+        file_list = list(map(lambda  x: (self.http_url(x[0]), x[1]), file_list))
+        for s in file_list:
+            print(s)
+            if not self.url_is_ok(s[0]):
+                file_list.remove(s)
+                print(s)
         return self.templates.url_set(list(map(lambda x: self.templates.url(x), file_list)))
 
     def get_files(self):
@@ -106,11 +122,13 @@ class SiteMap:
 
         for root, directories, filenames in os.walk(self.views_path):
             for f in filenames:
+
                 date_modified = (
                     datetime.datetime.fromtimestamp(os.path.getmtime(root)).date())
-                files.append(
-                    (os.path.join(root.replace(self.views_path, ''), f), date_modified.isoformat()))
-
+                controller_path = root.replace(self.views_path, '')
+                if (os.path.getsize(os.path.join(root,f))):
+                    files.append(
+                        (os.path.join(controller_path, f), date_modified.isoformat()))
         return files
 
     def remove_unwanted_files(self, file_list):
