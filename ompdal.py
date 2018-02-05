@@ -39,7 +39,56 @@ class OMPDAL:
     def __init__(self, db, conf):
         self.db = db
         self.conf = conf
-        
+
+
+
+    def getAnnouncementsByPress(self, press_id):
+        """
+        Get announcement by press
+        """
+        a = self.db.announcements
+
+        return self.db(a.assoc_id == press_id).select(a.ALL, orderby=~a.date_posted)
+
+
+    def getAnnouncementsByType(self, t):
+        """
+        Get Announcements by type
+        """
+        a = self.db.announcements
+
+        q = ((a.type_id == t.type_id)
+             & (a.assoc_id == t.assoc_id)
+             & (a.assoc_type == t.assoc_type)
+             )
+
+        return self.db(q).select(a.ALL, orderby=~a.date_posted)
+
+    def getAnnouncementSettings(self, announcement_id):
+        """
+        Get Announcement settings
+        """
+        a = self.db.announcement_settings
+        q = (a.announcement_id == announcement_id)
+
+        return self.db(q).select(a.ALL)
+
+    def getAnnouncementType(self, type_id):
+        """
+         get Announcement type
+        """
+
+        return self.db.announcement_types[type_id]
+
+    def getAnnouncementTypeSettings(self, type_id):
+        """
+        Get Announcement type settings
+        """
+        ats = self.db.announcement_type_settings
+
+        return self.db(ats.type_id == type_id).select(ats.ALL)
+
+
 
     def getPresses(self):
         """
