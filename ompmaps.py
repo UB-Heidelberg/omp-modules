@@ -55,7 +55,7 @@ class SiteMap:
 
         self.path = '{}/{}'.format(request.env.web2py_path, request.folder)
         self.press_id = myconf.take('omp.press_id')
-        self.stop_words = ['snippets','series','catalog/snippets']
+        self.stop_words = ['snippets','series','catalog/snippets','partner','reader']
         self.site_map_priority = '{}/{}'.format(self.path, 'sitemap.json')
         self.templates = Templates()
         self.static_path = '{}/{}'.format(self.path, 'static')
@@ -128,7 +128,6 @@ class SiteMap:
                     if (os.path.getsize(os.path.join(root,f))):
                         files.append(
                         (os.path.join(controller_path, f), date_modified.isoformat()))
-        print(files)
         return files
 
     def remove_unwanted_files(self, file_list):
