@@ -6,6 +6,7 @@ Created on 11 Jan 2018
 '''
 
 from ompdal import OMPDAL
+import datetime
 from gluon.html import DIV,H5,IMG,P,URL,XML
 
 
@@ -13,6 +14,7 @@ class Announcements:
 
     def __init__(self, conf, db, locale):
         self.locale = locale
+        self.conf = conf
         self.ompdal = OMPDAL(db, conf)
         self.press_id = int(conf.take('omp.press_id'))
         self.press_settings = self.ompdal.getPressSettings(self.press_id)
@@ -31,7 +33,7 @@ class Announcements:
         nah = list(filter(lambda e: e['setting_name'] == 'numAnnouncementsHomepage', self.press_settings.as_list()))
 
         if nah:
-            return nah[0]['setting_value']
+            return int(nah[0]['setting_value'])
         else:
             return 6
 
@@ -39,11 +41,25 @@ class Announcements:
 
 
     def create_announcement_list(self):
+        now = datetime.datetime.now()
+        def expires(e):
+            if e['date_expire']:
+                if e['date_expire'] > now :
+                    return  True
+                else:
+                    return False
+            else:
+                return True
 
-        news = self.ompdal.getAnnouncementsByPress(self.press_id)
+        news = self.ompdal.getAnnouncementsByPress(self.press_id).as_list()
+
+        news= list(filter(lambda e: expires(e), news))
 
         if news:
-            return list(map(lambda e: self.create_announcement(e), news.as_list()))
+            nl = list(map(lambda e: self.create_announcement(e), news))
+
+            del nl[self.get_number():]
+            return nl
         else:
             return []
 
@@ -64,7 +80,8 @@ class Announcements:
 
         ann = self.ompdal.getAnnouncementTypeSettings(a['type_id']).as_list()
         t = list(filter(lambda e: e['locale'] == self.locale and e['setting_name'] == 'name', ann))
-        ann_type = t[0]['setting_value'] if t else ''
+        ann_type = t[0]['setting_value'] if t else self.conf.take('web.application')
+        ann_type = ann_type.replace(' ','_').lower()
         img_url = URL('static', '{}{}{}'.format('images/press/home/announcements/',ann_type,'.png'))
 
         div_img = DIV(IMG(_src=img_url, _style="width: 50px;"),
