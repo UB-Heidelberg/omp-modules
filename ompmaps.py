@@ -55,7 +55,7 @@ class SiteMap:
 
         self.path = '{}/{}'.format(request.env.web2py_path, request.folder)
         self.press_id = myconf.take('omp.press_id')
-        self.stop_words = ['snippets']
+        self.stop_words = ['snippets','series','catalog/snippets']
         self.site_map_priority = '{}/{}'.format(self.path, 'sitemap.json')
         self.templates = Templates()
         self.static_path = '{}/{}'.format(self.path, 'static')
@@ -77,7 +77,7 @@ class SiteMap:
 
         series = ompdal.getSeriesByPress(self.press_id).as_list()
         series_map = list(
-            map(lambda x: ('/series/{}'.format(x['path']), datetime.datetime.now().date(), self.series_priority),
+            map(lambda x: ('/catalog/series/{}'.format(x['path']), datetime.datetime.now().date(), self.series_priority),
                 series))
         series_info_map = list(
             map(lambda x: ('/series/info/{}'.format(x['path']),
@@ -124,9 +124,11 @@ class SiteMap:
                 date_modified = (
                     datetime.datetime.fromtimestamp(os.path.getmtime(root)).date())
                 controller_path = root.replace(self.views_path, '')
-                if (os.path.getsize(os.path.join(root,f))):
-                    files.append(
+                if controller_path[1:] not in self.stop_words:
+                    if (os.path.getsize(os.path.join(root,f))):
+                        files.append(
                         (os.path.join(controller_path, f), date_modified.isoformat()))
+        print(files)
         return files
 
     def remove_unwanted_files(self, file_list):
