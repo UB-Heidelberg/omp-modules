@@ -11,8 +11,6 @@ from ompformat import dateFromRow
 
 class OMPCSL():
     def __init__(self, dal, config, locale=''):
-        if not isinstance(dal, OMPDAL):
-            raise TypeError('dal must be an OMPDAL')
         self.locale = locale
         self.db = dal
         self.config = config
