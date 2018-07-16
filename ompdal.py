@@ -592,6 +592,15 @@ class OMPDAL:
         res = self.db(q).select(sf.ALL, orderby=sf.revision)
         return res
 
+    def getSubmissionFileBySubmission(self, submission_id):
+        """
+        Get files of a submission.
+        """
+        sf = self.db.submission_files
+        q = (sf.submission_id == submission_id)
+
+        return self.db(q).select(sf.ALL)
+
     def getSubmissionFileSettings(self, file_id):
         """
         Get settings for a given submission file.
