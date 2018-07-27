@@ -196,6 +196,20 @@ class OMPDAL:
             orderby=a.seq
         )
 
+    def getAuthorsByPress(self, press_id, filter_browse=True,  status=3):
+        """
+        Get all authors associated with the specified press regardless of their role.
+        """
+        a = self.db.authors
+        s = self.db.submissions
+        q = ((s.context_id == press_id) & (s.status == status) & (a.submission_id == s.submission_id))
+
+        if filter_browse:
+            q &= (a.include_in_browse == True)
+
+        return self.db(q).select(a.ALL, orderby=a.last_name)
+        return self.db(q).select(a.ALL, orderby=a.last_name)
+
     def getActualAuthorsBySubmission(self, submission_id, filter_browse=True):
         """
         Get all authors associated with the specified submission with chapter author role.
@@ -577,6 +591,15 @@ class OMPDAL:
 
         res = self.db(q).select(sf.ALL, orderby=sf.revision)
         return res
+
+    def getSubmissionFileBySubmission(self, submission_id):
+        """
+        Get files of a submission.
+        """
+        sf = self.db.submission_files
+        q = (sf.submission_id == submission_id)
+
+        return self.db(q).select(sf.ALL)
 
     def getSubmissionFileSettings(self, file_id):
         """
