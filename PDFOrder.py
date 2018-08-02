@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 from decimal import Decimal
@@ -75,11 +74,11 @@ class PDFOrder():
         impathdict = dict()
 
         impathdict = {
-                     1:{'logo':(im_path_heiBooks,60,250,200,40)},
-                     2:{'logo':(im_path_arth,80,260,120,30)},
-                     3:{'logo':(im_path_prop,90,260,110,30)},
-                     4:{'logo':(im_path_Xasia,100,255,90,30)},
-                     6:{'logo':(im_path_heiUP,60,250,125,45)}
+                     1:{'logo':(im_path_heiBooks,150,255,50,40)},
+                     2:{'logo':(im_path_arth,120,262,80,40)},
+                     3:{'logo':(im_path_prop,140,262,60,30)},
+                     4:{'logo':(im_path_Xasia,150,262,50,30)},
+                     6:{'logo':(im_path_heiUP,61,244,135,55)}
                      }
 
         for k,v in impathdict.items():
@@ -100,13 +99,13 @@ class PDFOrder():
 
 
 
-        senderaddressLine1 = '<font size="7">%s</font>' % xml.SenderAddress.SenderLine1
+        senderaddressLine1 = '<font size="6">%s</font>' % xml.SenderAddress.SenderLine1
 
         p = Paragraph(senderaddressLine1, styles["Normal"])
         p.wrapOn(self.canvas, width, self.height)
         p.drawOn(self.canvas, *self.coord(25, 60, mm))
 
-        senderaddressLine2 = '<font size="7">%s</font>' % xml.SenderAddress.SenderLine2
+        senderaddressLine2 = '<font size="6">%s</font>' % xml.SenderAddress.SenderLine2
 
         p = Paragraph(senderaddressLine2, styles["Normal"])
         p.wrapOn(self.canvas, width, self.height)
@@ -224,4 +223,3 @@ class PDFOrder():
             xml = f.read()
 
         return objectify.fromstring(xml)
-
