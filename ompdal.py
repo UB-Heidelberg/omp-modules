@@ -505,7 +505,7 @@ class OMPDAL:
              & (pf.is_approved == approved)
              & (pfs.publication_format_id == pf.publication_format_id)
              & (pfs.setting_name == "name")
-             & (pfs.setting_value == name)
+             & (pfs.setting_value.lower() == name.lower())
              )
         return self.db(q).select(pf.ALL, groupby=pf.submission_id)
 
