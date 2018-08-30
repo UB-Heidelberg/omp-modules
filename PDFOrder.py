@@ -112,6 +112,7 @@ class PDFOrder():
         p.drawOn(self.canvas, *self.coord(25, 62.5, mm))
 
 
+        
         if xml.LS_Data.OrderType == "WH":
             shippingaddress = """<font size="10">
             %s<br />
@@ -135,7 +136,7 @@ class PDFOrder():
                 </font>
                 """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.AddressLine3,
                 xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
-            else:
+            elif xml.ShippingAddress.AddressLine2:
                 shippingaddress = """<font size="10">
                 %s<br />
                 %s<br />
@@ -145,6 +146,16 @@ class PDFOrder():
                 </font>
                 """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2,
                 xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
+            else:
+                shippingaddress = """<font size="10">
+                %s<br />
+                %s<br />
+                %s %s<br />
+                %s<br />
+                </font>
+                """ % (xml.ShippingAddress.AddressLine1,
+                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
+
 
         p = Paragraph(shippingaddress, styles["Normal"])
         p.wrapOn(self.canvas, width, self.height)
