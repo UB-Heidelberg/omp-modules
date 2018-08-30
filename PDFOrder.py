@@ -111,15 +111,40 @@ class PDFOrder():
         p.wrapOn(self.canvas, width, self.height)
         p.drawOn(self.canvas, *self.coord(25, 62.5, mm))
 
-        shippingaddress = """<font size="10">
-        %s<br />
-        %s<br />
-        %s<br />
-        %s<br />
-        %s %s<br />
-        </font>
-        """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.FromPerson,
-               xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City)
+
+        if xml.LS_Data.OrderType == "WH":
+            shippingaddress = """<font size="10">
+            %s<br />
+            %s<br />
+            %s<br />
+            %s<br />
+            %s %s<br />
+            %s<br />
+            </font>
+            """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.FromPerson,
+               xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
+        else:
+            if xml.ShippingAddress.AddressLine3:
+                shippingaddress = """<font size="10">
+                %s<br />
+                %s<br />
+                %s<br />
+                %s<br />
+                %s %s<br />
+                %s<br />
+                </font>
+                """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.AddressLine3,
+                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
+            else:
+                shippingaddress = """<font size="10">
+                %s<br />
+                %s<br />
+                %s<br />
+                %s %s<br />
+                %s<br />
+                </font>
+                """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2,
+                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
 
         p = Paragraph(shippingaddress, styles["Normal"])
         p.wrapOn(self.canvas, width, self.height)
@@ -190,7 +215,7 @@ class PDFOrder():
 
         data.append([Pos, Menge, Kurztitel, Einband, ISBN])
         #data.append([xml.LS_Data.Position, xml.LS_Data.Copies, KT_name, xml.LS_Data.Einband, xml.LS_Data.EAN])
-        data.append([xml.LS_Data.Position, xml.LS_Data.Copies, "" , xml.LS_Data.Einband, xml.LS_Data.EAN])
+        data.append(["1", xml.LS_Data.Copies, "" , xml.LS_Data.Einband, xml.LS_Data.EAN])
 
         t = Table(data, colWidths=(1.2 * cm, 1.6 * cm, 8.5 * cm, 2 * cm, 4 * cm), rowHeights=(0.6*cm, 0.4*cm))
         t.setStyle(TableStyle([
