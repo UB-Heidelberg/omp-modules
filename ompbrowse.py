@@ -12,6 +12,7 @@ from ompformat import seriesPositionCompare
 import collections
 
 
+
 class Browser:
 
     def __init__(self, s, current, locale, p, sort_by, f):
@@ -90,6 +91,7 @@ class Browser:
     def process_submissions(self, s):
 
         submission_sort = self.submission_sort.get(self.sort_by)
+
         if self.sort_by == 'seriesPosition-1':
             s = sorted(s, cmp=seriesPositionCompare, reverse=False)
         elif self.sort_by == 'seriesPosition-2':

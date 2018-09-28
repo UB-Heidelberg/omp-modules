@@ -280,8 +280,16 @@ def haveMultipleAuthors(chapters):
         return True
 
 def seriesPositionCompare(s1, s2):
-    p1 = s1.attributes.series_position
-    p2 = s2.attributes.series_position
+    def convert(x):
+        x = str(x)
+        for i in range(3):
+            if len(x.split('.')) == i:
+                x = x.replace('.', '') + (2-i)*'0'
+        return x
+
+    p1 = convert(s1.attributes.series_position)
+    p2 = convert(s2.attributes.series_position)
+
     # Cannot compare to empty value
     if not p1 or not p2:
         return 0
@@ -297,11 +305,12 @@ def seriesPositionCompare(s1, s2):
         except IndexError:
             # No integer value found – keep position values as is for comparison
             pass
-    
     if p1 > p2:
         return 1
     elif p2 > p1:
         return -1
     else:
         return 0
+
+
 
