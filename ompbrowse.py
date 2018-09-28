@@ -95,7 +95,7 @@ class Browser:
         if self.sort_by == 'seriesPosition-1':
             s = sorted(s, cmp=seriesPositionCompare, reverse=False)
         elif self.sort_by == 'seriesPosition-2':
-            s = sorted(s, cmp=seriesPositionCompare, reverse=True)
+            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
         elif self.sort_by == 'category':
             s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
                                                                                                       self.locale) if s.associated_items.get(

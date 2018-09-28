@@ -306,9 +306,9 @@ def seriesPositionCompare(s1, s2):
             # No integer value found – keep position values as is for comparison
             pass
     if p1 > p2:
-        return 1
-    elif p2 > p1:
         return -1
+    elif p2 > p1:
+        return 1
     else:
         return 0
 
