@@ -101,7 +101,8 @@ class Browser:
                                                                                                       self.locale) if s.associated_items.get(
                 'category') else False, reverse=False)
         else:
-            s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
+            if submission_sort:
+                s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
 
         s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
