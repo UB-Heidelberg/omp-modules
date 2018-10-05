@@ -174,8 +174,8 @@ class PDFOrder():
         p.drawOn(self.canvas, *self.coord(25, 129.5, mm))
 
         if xml.LS_Data.BestellzeichenKunde:
-            itemnumber = '<font size="10">Lieferschein Nr. %s</font>' % xml.LS_Data.BestellzeichenKunde
-            p = Paragraph(ordernumber, styles["Normal"])
+            itemnumber = '<font size="10">Bestellzeichen Kunde: %s</font>' % xml.LS_Data.BestellzeichenKunde
+            p = Paragraph(itemnumber, styles["Normal"])
             p.wrapOn(self.canvas, width, self.height)
             p.drawOn(self.canvas, *self.coord(140, 129.5, mm))
 
