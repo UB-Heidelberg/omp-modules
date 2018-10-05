@@ -650,3 +650,5 @@ class OMPDAL:
              )
 
         return self.db(q).select(el.date_logged, orderby=el.date_logged)
+
+
