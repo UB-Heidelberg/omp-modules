@@ -207,8 +207,8 @@ class OMPDAL:
         if filter_browse:
             q &= (a.include_in_browse == True)
 
-        return self.db(q).select(a.ALL, orderby=a.last_name)
-        return self.db(q).select(a.ALL, orderby=a.last_name)
+        return self.db(q).iterselect(a.first_name,a.last_name,a.submission_id,orderby=a.last_name)
+
 
     def getActualAuthorsBySubmission(self, submission_id, filter_browse=True):
         """
@@ -496,7 +496,7 @@ class OMPDAL:
 
     def getPublicationFormatByName(self, submission_id, name, available=True, approved=True):
         """
-        Get publication format for the given submission where any of the settings for 'name' matches the given string name. 
+        Get publication format for the given submission where any of the settings for 'name' matches the given string name.
         """
         pf = self.db.publication_formats
         pfs = self.db.publication_format_settings
