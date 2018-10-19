@@ -227,10 +227,10 @@ class PDFOrder():
         pf_id = self.getPublicationFormatID(self.submission_id)
         markets = self.ompdal.getMarketsByPublicationFormat(pf_id)
 
-        if markets:
-            price = float(markets.first().get('price',0).replace(',','.'))
-        else:
-            raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
+
+        price = float(markets.first().get('price',0).replace(',','.')) if markets else 0
+        #else:
+        #    raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
 
         copies = self.record.get('copies',1)
         copies = int(copies) if str(copies).isdigit() else None
