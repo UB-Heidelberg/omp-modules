@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from decimal import Decimal
-from lxml import etree, objectify
-from gluon import current
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -10,258 +9,238 @@ from reportlab.lib.units import inch, mm, cm
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.graphics.shapes import Line, Drawing
+from gluon.html import HTML
+
+LOCALE = 'de_DE'
+
 styleSheet = getSampleStyleSheet()
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import textwrap
+from os.path import join
 import sys
+from decimal import  Decimal
+from gluon.http import HTTP, redirect
 reload(sys)
 sys.setdefaultencoding('utf-8')
+from ompdal import OMPDAL
 
-########################################################################
+
 class PDFOrder():
-    """"""
+    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile1', 'adresszeile1',
+                      'mitarbeiter', 'strasse_und_nr', 'plz', 'ort',
+                      'laendercode']
+    IMG_PATH = 'applications/knv/static/images'
+    PRESS_CONFIGURATON = {
+        1: ('Logo_heiBOOKS.png', 150, 255, 50, 40),
+        2: ('Logo_Arthistoricum.png', 120, 262, 80, 40),
+        3: ('Logo_Propylaeum.png', 140, 262, 60, 30),
+        4: ('Logo_Crossasia.png', 150, 262, 50, 30),
+        6: ('Logo_heiUP.png', 61, 244, 135, 55)
+        }
+    FOOTER = ['Bitte nicht buchen, Rechnung folgt.',
+              'Bei Rückfragen wenden Sie sich bitte an <a '
+              'href="mailto:heiUP@ub.uni-heidlberg.de"><u><font '
+              'color="blue">heiUP@ub.uni-heidelberg.de</font></u></a>, '
+              'Tel.: +49 6221 542383.'
+              ]
+    FONTS = [('ArialMT', 'Arial.ttf', 10), ('DejaVu', 'DejaVuSans.ttf', 9.5)]
+    TABLE_STYLE = TableStyle(
+            [('VALIGN', (0, 0), (-1, -1), "TOP"),
+             ('ALIGN', (0, 0), (-1, -1), "LEFT"),
+             ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.transparent),
+             ('BOX', (0, 0), (-1, -1), 0.25, colors.transparent)
+             ])
+    TABLE_HEADERS = ['Pos', 'Menge', 'Kurztitel', 'Einband', 'ISBN', 'Preis']
+    WIDTH, HEIGHT = A4
 
-#----------------------------------------------------------------------
-    def __init__(self, xml_file, pdf_file):
-        """Constructor"""
+    def __init__(self, pdf_file, request, record, db, conf):
 
-        self.xml_file = xml_file
-        self.pdf_file = pdf_file
-        self.request = current.request
+        self.IM_PATH = join(request.env.web2py_path, PDFOrder.IMG_PATH)
 
+        self.record = record.first().as_dict()
 
-        self.xml_obj = self.getXMLObject()
+        self.submission_id = int(self.record.get('submission_id'))
 
-#----------------------------------------------------------------------
-    def coord(self, x, y, unit=1):
-        """
-        # http://stackoverflow.com/questions/4726011/wrap-text-in-a-table-reportlab
-        Helper class to help position flowables in Canvas objects
-        """
-        x, y = x * unit, self.height -  y * unit
+        self.ompdal = OMPDAL(db, conf)
+
+        self.styles = getSampleStyleSheet()
+
+        self.canvas = canvas.Canvas(pdf_file, pagesize=A4)
+
+        self.setFont(self.canvas)
+
+    def coordinates(self, x, y, unit=1):
+
+        x, y = x * unit, PDFOrder.HEIGHT - y * unit
         return x, y
 
-#----------------------------------------------------------------------
+    def drawUTFText(self, canvas, x, y, text):
+
+        canvas.drawString(x, y, u'{}'.format(text.encode('utf-8')))
+
+
+    def drawParagraph(self, text, size, style, top_margin, left_margin=25):
+
+        p = Paragraph('<font size="{}">{}</font>'.format(size, text),
+                      self.styles[style])
+        p.wrapOn(self.canvas, PDFOrder.WIDTH, PDFOrder.HEIGHT)
+        p.drawOn(self.canvas, *self.coordinates(left_margin, top_margin, mm))
+
     def createPDF(self):
-        """
-        Create a PDF based on the XML data
-        """
-        # internal methods
-        def drawStringUTF(x,y,text):
-            self.canvas.drawString(x, y, u'{}'.format(text.encode('utf-8')))
 
+        self.drawLogo()
 
-        # global variables
-        self.canvas = canvas.Canvas(self.pdf_file, pagesize=A4)
-        width, self.height = A4
-        styles = getSampleStyleSheet()
-        xml = self.xml_obj
-        pdfmetrics.registerFont(TTFont('ArialMT','Arial.ttf'))
-        pdfmetrics.registerFont(TTFont('DejaVu','DejaVuSans.ttf'))
-        self.canvas.setFont("ArialMT", 10)
-        self.canvas.setFont("DejaVu", 9.5)
+        self.drawSenderAddress()
 
-        im_path_heiBooks = '{}{}{}'.format(self.request.env.web2py_path,'/applications/knv/static/images/','Logo_heiBOOKS.png')
-        im_path_arth = '{}{}{}'.format(self.request.env.web2py_path,'/applications/knv/static/images/','Logo_Arthistoricum.png')
-        im_path_prop = '{}{}{}'.format(self.request.env.web2py_path,'/applications/knv/static/images/','Logo_Propylaeum.png')
-        im_path_Xasia = '{}{}{}'.format(self.request.env.web2py_path,'/applications/knv/static/images/','Logo_Crossasia.png')
-        im_path_heiUP = '{}{}{}'.format(self.request.env.web2py_path,'/applications/knv/static/images/','Logo_heiUP.png')
+        self.drawReceiverAddress()
 
+        self.drawDelliveryNote()
 
-        press_id_xml = int(xml.LS_Data.PressId)
-        logo = ""
-        impathdict = dict()
+        self.drawOrderSignareOfCustomer()
 
-        impathdict = {
-                     1:{'logo':(im_path_heiBooks,150,255,50,40)},
-                     2:{'logo':(im_path_arth,120,262,80,40)},
-                     3:{'logo':(im_path_prop,140,262,60,30)},
-                     4:{'logo':(im_path_Xasia,150,262,50,30)},
-                     6:{'logo':(im_path_heiUP,61,244,135,55)}
-                     }
+        self.canvas.line(75, 447, 565, 447 )
 
-        for k,v in impathdict.items():
-            if k == press_id_xml:
-                logo = v.get('logo')
-                self.canvas.drawImage(logo[0], logo[1] * mm, logo[2] * mm, width=logo[3] * mm, height=logo[4]*mm, preserveAspectRatio=True, mask='auto')
+        self.createTable()
 
-        #if press_id_xml == 1:
-            #self.canvas.drawImage(im_path_heiBooks, 6 * cm, 25 * cm, width=20 * cm, height = 4*cm, preserveAspectRatio=True, mask='auto')
-        #if press_id_xml == 2:
-            #self.canvas.drawImage(im_path_arth, 8 * cm, 26 * cm, width=12 * cm, height = 3* cm, preserveAspectRatio=True, mask='auto')
-        #if press_id_xml == 3:
-           #self.canvas.drawImage(im_path_prop, 9 * cm, 26 * cm, width=11 * cm, height = 3* cm, preserveAspectRatio=True, mask='auto')
-        #if press_id_xml == 3:
-           #self.canvas.drawImage(im_path_Xasia, 10 * cm, 25.5 * cm, width=9* cm, height = 3* cm, preserveAspectRatio=True, mask='auto')
-        #if press_id_xml == 6:
-            #self.canvas.drawImage(im_path_heiUP, 6 * cm, 25 * cm, width=12 * cm, height  = 4*cm,  preserveAspectRatio=True, mask='auto')
+        self.createShortTitleFlowable()
 
+        self.createFooter()
 
+        self.canvas.save()
 
-        senderaddressLine1 = '<font size="6">%s</font>' % xml.SenderAddress.SenderLine1
+    def createFooter(self):
+        for i, part in enumerate(PDFOrder.FOOTER):
+            self.drawParagraph(part, 9, "Normal", 250 + 10 * i)
 
-        p = Paragraph(senderaddressLine1, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 60, mm))
+    def createShortTitleFlowable(self):
 
-        senderaddressLine2 = '<font size="6">%s</font>' % xml.SenderAddress.SenderLine2
+        for i, line in enumerate(self.getShortTitle()):
+            self.drawUTFText(self.canvas, 150, 434 - 10 * i, line)
 
-        p = Paragraph(senderaddressLine2, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 62.5, mm))
-
-
-
-        if xml.LS_Data.OrderType == "WH":
-            shippingaddress = """<font size="10">
-            %s<br />
-            %s<br />
-            %s<br />
-            %s<br />
-            %s %s<br />
-            %s<br />
-            </font>
-            """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.FromPerson,
-               xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
-        else:
-            if xml.ShippingAddress.AddressLine3:
-                shippingaddress = """<font size="10">
-                %s<br />
-                %s<br />
-                %s<br />
-                %s<br />
-                %s %s<br />
-                %s<br />
-                </font>
-                """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2, xml.ShippingAddress.AddressLine3,
-                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
-            elif xml.ShippingAddress.AddressLine2:
-                shippingaddress = """<font size="10">
-                %s<br />
-                %s<br />
-                %s<br />
-                %s %s<br />
-                %s<br />
-                </font>
-                """ % (xml.ShippingAddress.AddressLine1, xml.ShippingAddress.AddressLine2,
-                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
-            else:
-                shippingaddress = """<font size="10">
-                %s<br />
-                %s<br />
-                %s %s<br />
-                %s<br />
-                </font>
-                """ % (xml.ShippingAddress.AddressLine1,
-                xml.ShippingAddress.Street, xml.ShippingAddress.ZIP, xml.ShippingAddress.City, xml.ShippingAddress.Country)
-
-
-        p = Paragraph(shippingaddress, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 88, mm))
-
-        sentdate = '<font size="10">Lieferschein vom %s</font>' % xml.LS_Data.SentDate
-
-        p = Paragraph(sentdate, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 125, mm))
-
-        ordernumber = '<font size="10">Lieferschein Nr. %s</font>' % xml.LS_Data.OrderNumber
-
-        p = Paragraph(ordernumber, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 129.5, mm))
-
-        if xml.LS_Data.BestellzeichenKunde:
-            itemnumber = '<font size="10">Bestellzeichen Kunde: %s</font>' % xml.LS_Data.BestellzeichenKunde
-            p = Paragraph(itemnumber, styles["Normal"])
-            p.wrapOn(self.canvas, width, self.height)
-            p.drawOn(self.canvas, *self.coord(140, 129.5, mm))
-
-        Pos = Paragraph('''
-                       <b>Pos.</b>
-                       ''',
-                        styleSheet["BodyText"])
-        Menge = Paragraph('''
-                       <b>Menge</b>
-                       ''',
-                          styleSheet["BodyText"])
-        Kurztitel = Paragraph('''
-                       <b>Kurztitel</b>
-                       ''',
-                              styleSheet["BodyText"])
-        Einband = Paragraph('''
-                       <b>Einband</b>
-                       ''',
-                            styleSheet["BodyText"])
-        ISBN = Paragraph('''
-                       <b>ISBN</b>
-                       ''',
-                         styleSheet["BodyText"])
-
-        KT_Split = str(xml.LS_Data.Kurztitel).split(":")
-        KT_name = KT_Split[0]  + ":"
-
-        #KT_name = Paragraph(KT_Split[0]  + ":", styleSheet['BodyText'])
-
-        self.canvas.line(75, 441, 540, 441)
-
-        drawStringUTF(156,429,KT_name)
-
-        wrap_text = []
-        if len(KT_Split[1]) > 45 and len(KT_Split[1]) <=90:
-            wrap_text = textwrap.wrap(KT_Split[1], width=45)
-            drawStringUTF(153,416,wrap_text[0])
-            drawStringUTF(156,405,wrap_text[1])
-        elif len(KT_Split[1]) > 90  and len(KT_Split[1]) <=120:
-            wrap_text = textwrap.wrap(KT_Split[1], width=45)
-            drawStringUTF(153,416,wrap_text[0])
-            drawStringUTF(156,405,wrap_text[1])
-            drawStringUTF(156,395,wrap_text[2])
-        elif len(KT_Split[1]) > 120:
-            wrap_text = textwrap.wrap(KT_Split[1], width=45)
-            drawStringUTF(153,416,wrap_text[0])
-            drawStringUTF(156,405,wrap_text[1])
-            drawStringUTF(156,395,wrap_text[2])
-            drawStringUTF(156,385,wrap_text[3])
-        else:
-            drawStringUTF(153,417,KT_Split[1])
+    def createTable(self):
 
         data = []
 
-        data.append([Pos, Menge, Kurztitel, Einband, ISBN])
-        #data.append([xml.LS_Data.Position, xml.LS_Data.Copies, KT_name, xml.LS_Data.Einband, xml.LS_Data.EAN])
-        data.append(["1", xml.LS_Data.Copies, "" , xml.LS_Data.Einband, xml.LS_Data.EAN])
+        data.append([self.createTableTH(val) for val in PDFOrder.TABLE_HEADERS])
+        data.append(["1", self.record.get('copies'), "",
+                     self.record.get('format').decode('utf-8'), self.getISBN(),
+                     self.getPrice()])
 
-        t = Table(data, colWidths=(1.2 * cm, 1.6 * cm, 8.5 * cm, 2 * cm, 4 * cm), rowHeights=(0.6*cm, 0.4*cm))
-        t.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), "TOP"),
-            ('ALIGN', (0,0), (-1,-1), "LEFT"),
-            ('INNERGRID', (0,0), (-1,-1), 0.25, colors.transparent),
-            ('BOX', (0,0), (-1,-1), 0.25, colors.transparent)
-            ]))
+        t = Table(data, colWidths=(
+            1.2 * cm, 1.6 * cm, 7.0 * cm, 2 * cm, 4 * cm, 2 * cm),
+                  rowHeights=(0.6 * cm, 0.6 * cm))
 
-        t.wrapOn(self.canvas, width, self.height)
-        t.drawOn(self.canvas, *self.coord(25, 145, mm))
+        t.setStyle(PDFOrder.TABLE_STYLE)
 
-        txt = '<font size="9">Bitte nicht buchen, Rechnung folgt.</font>'
-        p = Paragraph(txt, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 240, mm))
+        t.wrapOn(self.canvas, PDFOrder.WIDTH, PDFOrder.HEIGHT)
 
-        txt = '<font size="9">%s <a href="mailto:heiUP@ub.uni-heidlberg.de"><u><font color="blue">heiUP@ub.uni-heidelberg.de</font></u></a>, Tel.: +49 6221 542383.</font>' %('Bei Rückfragen wenden Sie sich bitte an')
-        p = Paragraph(txt, styles["Normal"])
-        p.wrapOn(self.canvas, width, self.height)
-        p.drawOn(self.canvas, *self.coord(25, 255, mm))
-        self.canvas.save()
+        t.drawOn(self.canvas, *self.coordinates(25, 145, mm))
 
-#----------------------------------------------------------------------
-    def getXMLObject(self):
-        """
-        Open the XML document and return an lxml XML document
-        """
-        with open(self.xml_file) as f:
-            xml = f.read()
+    def getShortTitle(self):
+        result = []
+        lastnames = [a['last_name'] for a in
+                        self.ompdal.getAuthorsBySubmission(self.submission_id)]
+        if len(lastnames) > 4 :
+            lastnames  = lastnames[0:4]
+            lastnames[3] += ' et al'
 
-        return objectify.fromstring(xml)
+        authors = '/'.join(lastnames) + " (Hrsg.):"
+
+        submission_settings = self.ompdal.getSubmissionSettings(
+                self.submission_id).find(lambda row: row.locale == LOCALE).find(
+                lambda row: row.setting_name == 'title')
+        if len(submission_settings) ==0 :
+            raise HTTP(403,'Title not found')
+
+        result += textwrap.wrap(authors, 40)
+        result += textwrap.wrap(str(submission_settings.first()['setting_value']),40)
+
+        return result
+
+    def createTableTH(self, content):
+
+        return Paragraph('<b>%s.</b>' % content, styleSheet["BodyText"])
+
+    def drawOrderSignareOfCustomer(self):
+
+        self.drawParagraph('{} {}'.format('Bestellzeichen Kunde:',
+                                          self.record.get('item_number')),
+                           10, "Normal", 129.5, left_margin=140)
+
+    def drawDelliveryNote(self):
+
+        self.drawParagraph(
+                '{} {}'.format('Lieferschein vom',
+                               self.record.get('sent_date')),
+                10, "Normal", 125)
+        self.drawParagraph(
+                '{} {}-{}'.format('Lieferschein Nr. ub-pub-',
+                                  self.record.get('curyear'),
+                                  str(self.record.get('order_number')).rjust(5,
+                                                                             "0")),
+                10, "Normal", 129.5)
+
+    def drawSenderAddress(self):
+
+        self.drawParagraph(self.record.get('abs_zeile1'), 6, "Normal", 60)
+        self.drawParagraph(self.record.get('abs_zeile2'), 6, "Normal", 62.5)
+
+    def drawReceiverAddress(self):
+
+        address = [str(self.record.get(line)) for line in
+                   PDFOrder.ADDRESS_FIELDS]
+
+        for i, line in enumerate(address):
+            self.drawParagraph(line, 10, "Normal", 65 + i * 4)
+
+    def setFont(self, canvas):
+
+        for f in PDFOrder.FONTS:
+            pdfmetrics.registerFont(TTFont(f[0], f[1]))
+            canvas.setFont(f[0], f[2])
+
+    def drawLogo(self):
+
+        for k, v in PDFOrder.PRESS_CONFIGURATON.items():
+            if k == int(1):
+                self.canvas.drawImage(join(self.IM_PATH, v[0]), v[1] * mm,
+                                      v[2] * mm, width=v[3] * mm,
+                                      height=v[4] * mm,
+                                      preserveAspectRatio=True, mask='auto')
+
+    def getISBN(self):
+        pf_id = self.getPublicationFormatID(self.submission_id)
+        ics = self.ompdal.getIdentificationCodesByPublicationFormat(pf_id) if pf_id  else None
+        isbn = ics.first().get('value') if ics else ''
+        return isbn
+
+    def getPublicationFormatID(self,submission_id):
+        pfs = self.ompdal.getPublicationFormatByName(submission_id,
+                                                     self.record.get('format'))
+        pf_id = pfs.first().get('publication_format_id') if pfs else None
+        return pf_id
+
+    def getPrice(self):
+        pf_id = self.getPublicationFormatID(self.submission_id)
+        markets = self.ompdal.getMarketsByPublicationFormat(pf_id)
+
+        if markets:
+            price = float(markets.first().get('price',0).replace(',','.'))
+        else:
+            raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
+
+        copies = self.record.get('copies',1)
+        copies = int(copies) if str(copies).isdigit() else None
+        currency_rate = int(self.record.get('currency_rate', 1.0))
+
+        total = '{:5.2f}'.format(price * copies * currency_rate) if copies and price else ''
+
+        if self.record.get('price_formattng')=='Komma':
+            total = total.replace('.','.')
+
+        return '{} {}'.format(total, self.record.get("currency","€"))
+
+
+
+
