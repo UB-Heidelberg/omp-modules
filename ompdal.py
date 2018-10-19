@@ -652,3 +652,7 @@ class OMPDAL:
         return self.db(q).select(el.date_logged, orderby=el.date_logged)
 
 
+    def getMarketsByPublicationFormat(self, publication_format_id):
+        m = self.db.markets
+        q = (m.publication_format_id==publication_format_id)
+        return self.db(q).select(m.ALL)
