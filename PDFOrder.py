@@ -110,9 +110,13 @@ class PDFOrder():
         self.canvas.save()
 
     def createFooter(self):
-        footer = PDFOrder.FOOTER
 
-        for i, part in enumerate([self.record.get('customer_notice')]+footer):
+
+        customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
+        for i,line in enumerate(customer_notice):
+            self.drawParagraph(line, 9, "Normal", 230-len(customer_notice)*5 + 5*i)
+
+        for i, part in enumerate(PDFOrder.FOOTER):
             self.drawParagraph(part, 9, "Normal", 250 + 10 * i)
 
     def createShortTitleFlowable(self):
