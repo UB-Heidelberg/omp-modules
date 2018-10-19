@@ -111,8 +111,8 @@ class PDFOrder():
 
     def createFooter(self):
         footer = PDFOrder.FOOTER
-        footer.insert(0, self.record.get('customer_notice'))
-        for i, part in enumerate(footer):
+
+        for i, part in enumerate([self.record.get('customer_notice')]+footer):
             self.drawParagraph(part, 9, "Normal", 250 + 10 * i)
 
     def createShortTitleFlowable(self):
