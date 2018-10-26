@@ -29,24 +29,24 @@ class Templates:
         change_frequency = 'weekly'
         priority = x[2] if len(x) == 3 else 0.5
 
-
-
         t = Template(
-            '<url>'
-            '<loc>${loc}</loc>'
-            '<lastmod>$lastmod</lastmod>'
-            '<changefreq>$changefreq</changefreq>'
-            '<priority>$priority</priority>'
-            '</url>')
+                '<url>'
+                '<loc>${loc}</loc>'
+                '<lastmod>$lastmod</lastmod>'
+                '<changefreq>$changefreq</changefreq>'
+                '<priority>$priority</priority>'
+                '</url>')
 
-        return t.substitute(loc=loc, lastmod=lastmod, changefreq=change_frequency, priority=priority)
+        return t.substitute(loc=loc, lastmod=lastmod,
+                            changefreq=change_frequency, priority=priority)
 
     def url_set(self, urls):
-
         urls_str = '\n'.join(urls)
 
-        return '{}\n{}\n{}'.format('<urlset xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9" >', urls_str,
-                                   '</urlset>')
+        return '{}\n{}\n{}'.format(
+            '<urlset xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9" >',
+            urls_str,
+            '</urlset>')
 
 
 class SiteMap:
@@ -55,7 +55,8 @@ class SiteMap:
 
         self.path = '{}/{}'.format(request.env.web2py_path, request.folder)
         self.press_id = myconf.take('omp.press_id')
-        self.stop_words = ['snippets','series','catalog/snippets','partner','reader']
+        self.stop_words = ['snippets', 'series', 'catalog/snippets', 'partner',
+                           'reader', 'default']
         self.site_map_priority = '{}/{}'.format(self.path, 'sitemap.json')
         self.templates = Templates()
         self.static_path = '{}/{}'.format(self.path, 'static')
@@ -68,28 +69,31 @@ class SiteMap:
 
         submissions = ompdal.getSubmissionsByPress(self.press_id).as_list()
 
-        return list(
-            map(lambda x: (
-            '/catalog/book/{}'.format(x['submission_id']), x['last_modified'].date(), self.monographs_priority),
-                submissions))
+        return list(map(lambda x: (
+            '/catalog/book/{}'.format(x['submission_id']),
+            x['last_modified'].date(), self.monographs_priority),
+                        submissions))
 
     def create_series(self):
 
         series = ompdal.getSeriesByPress(self.press_id).as_list()
         series_map = list(
-            map(lambda x: ('/catalog/series/{}'.format(x['path']), datetime.datetime.now().date(), self.series_priority),
-                series))
+                map(lambda x: ('/catalog/series/{}'.format(x['path']),
+                               datetime.datetime.now().date(),
+                               self.series_priority),
+                    series))
         series_info_map = list(
-            map(lambda x: ('/series/info/{}'.format(x['path']),
-                           datetime.datetime.now().date(),
-                           self.series_priority),
-                series))
+                map(lambda x: ('/series/info/{}'.format(x['path']),
+                               datetime.datetime.now().date(),
+                               self.series_priority),
+                    series))
 
         return series_map + series_info_map
 
-    def http_url(self,x):
+    def http_url(self, x):
         if myconf['web']['application'] not in self.ignore_apps:
-            loc = '{}/{}{}'.format(myconf['web']['url'], myconf['web']['application'], x)
+            loc = '{}/{}{}'.format(myconf['web']['url'],
+                                   myconf['web']['application'], x)
         else:
             loc = '{}{}'.format(myconf['web']['url'], x)
         return loc
@@ -104,15 +108,16 @@ class SiteMap:
         except:
             return False
 
-
     def create_sitemap(self):
-        file_list=  self.create_static_map()+self.create_monographs() + self.create_series()
-        file_list = list(map(lambda  x: (self.http_url(x[0]), x[1]), file_list))
+        file_list = self.create_static_map() + self.create_monographs() + \
+                    self.create_series()
+        file_list = list(map(lambda x: (self.http_url(x[0]), x[1]), file_list))
         for s in file_list:
             if not self.url_is_ok(s[0]):
                 file_list.remove(s)
-                print(s)
-        return self.templates.url_set(list(map(lambda x: self.templates.url(x), file_list)))
+
+        return self.templates.url_set(
+            list(map(lambda x: self.templates.url(x), file_list)))
 
     def get_files(self):
 
@@ -122,19 +127,22 @@ class SiteMap:
             for f in filenames:
 
                 date_modified = (
-                    datetime.datetime.fromtimestamp(os.path.getmtime(root)).date())
+                    datetime.datetime.fromtimestamp(
+                        os.path.getmtime(root)).date())
                 controller_path = root.replace(self.views_path, '')
                 if controller_path[1:] not in self.stop_words:
-                    if (os.path.getsize(os.path.join(root,f))):
+                    if (os.path.getsize(os.path.join(root, f))):
                         files.append(
-                        (os.path.join(controller_path, f), date_modified.isoformat()))
+                                (os.path.join(controller_path, f),
+                                 date_modified.isoformat()))
         return files
 
     def remove_unwanted_files(self, file_list):
 
         file_list = list(filter(lambda x: x[0].endswith('.html'), file_list))
         file_list = list(filter(lambda x: x[0].startswith('/'), file_list))
-        file_list = list(filter(lambda x: x[0] not in self.stop_words, file_list))
+        file_list = list(
+            filter(lambda x: x[0] not in self.stop_words, file_list))
 
         return file_list
 
@@ -148,7 +156,8 @@ class SiteMap:
 
     def create_static_map(self):
 
-        dirs = self.read_configuration().get('directories') if self.read_configuration() else []
+        dirs = self.read_configuration().get(
+            'directories') if self.read_configuration() else []
         paths = list(map(lambda x: x["path"], dirs))
         file_list = self.remove_unwanted_files(self.get_files())
 
