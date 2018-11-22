@@ -193,9 +193,10 @@ class PDFOrder():
         self.drawParagraph(self.record.get('abs_zeile2'), 6, "Normal", 62.5)
 
     def drawReceiverAddress(self):
-
-        address = [str(self.record.get(line)) for line in
-                   PDFOrder.ADDRESS_FIELDS]
+        address = []
+        for line in   PDFOrder.ADDRESS_FIELDS:
+            if len(str(self.record.get(line))) > 0:
+                address.append(str(self.record.get(line)))
 
         for i, line in enumerate(address):
             self.drawParagraph(line, 10, "Normal", 65 + i * 4)
