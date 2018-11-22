@@ -27,7 +27,7 @@ from ompdal import OMPDAL
 
 
 class PDFOrder():
-    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile1', 'adresszeile1',
+    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3',
                       'mitarbeiter', 'strasse_und_nr', 'plz', 'ort',
                       'laendercode']
     IMG_PATH = 'applications/knv/static/images'
