@@ -171,10 +171,8 @@ class PDFOrder():
         return Paragraph('<b>%s</b>' % content, styleSheet["BodyText"])
 
     def drawOrderSignareOfCustomer(self):
-
-        self.drawParagraph('{} {}'.format('Bestellzeichen Kunde:',
-                                          self.record.get('item_number')),
-                           10, "Normal", 129.5, left_margin=140)
+        if self.record.get('item_number'):
+            self.drawParagraph('{} {}'.format('Bestellzeichen Kunde:',self.record.get('item_number')),10, "Normal", 129.5, left_margin=140)
 
     def drawDelliveryNote(self):
 
