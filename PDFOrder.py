@@ -29,8 +29,7 @@ from ompdal import OMPDAL
 
 
 class PDFOrder():
-    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3',
-                      'mitarbeiter', 'strasse_und_nr']
+    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3','strasse_und_nr']
     IMG_PATH = 'applications/knv/static/images'
     PRESS_CONFIGURATON = {
         1: ('Logo_heiBOOKS.png', 150, 255, 50, 40),
@@ -52,7 +51,7 @@ class PDFOrder():
              ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.transparent),
              ('BOX', (0, 0), (-1, -1), 0.25, colors.transparent)
              ])
-    TABLE_HEADERS = ['Pos', 'Menge', 'Kurztitel', 'Einband', 'ISBN', 'Preis']
+    TABLE_HEADERS = ['Pos.', 'Menge', 'Kurztitel', 'Einband', 'ISBN', 'Preis']
     WIDTH, HEIGHT = A4
 
     def __init__(self, pdf_file, request, record, db, conf):
@@ -169,7 +168,7 @@ class PDFOrder():
 
     def createTableTH(self, content):
 
-        return Paragraph('<b>%s.</b>' % content, styleSheet["BodyText"])
+        return Paragraph('<b>%s</b>' % content, styleSheet["BodyText"])
 
     def drawOrderSignareOfCustomer(self):
 
