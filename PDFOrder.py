@@ -9,7 +9,7 @@ from reportlab.lib.units import inch, mm, cm
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.graphics.shapes import Line, Drawing
-from gluon.html import HTML
+
 
 LOCALE = 'de_DE'
 
@@ -21,6 +21,8 @@ from os.path import join
 import sys
 from decimal import  Decimal
 from gluon.http import HTTP, redirect
+from gluon.html import URL
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 from ompdal import OMPDAL
@@ -62,6 +64,8 @@ class PDFOrder():
         self.submission_id = int(self.record.get('submission_id'))
 
         self.ompdal = OMPDAL(db, conf)
+
+        self.press_id = self.ompdal.getPress(self.ompdal.getSubmission(self.submission_id).first()['context_id'])
 
         self.styles = getSampleStyleSheet()
 
@@ -211,7 +215,7 @@ class PDFOrder():
     def drawLogo(self):
 
         for k, v in PDFOrder.PRESS_CONFIGURATON.items():
-            if k == int(1):
+            if k == int(self.press_id)
                 self.canvas.drawImage(join(self.IM_PATH, v[0]), v[1] * mm,
                                       v[2] * mm, width=v[3] * mm,
                                       height=v[4] * mm,
@@ -236,8 +240,8 @@ class PDFOrder():
         if markets:
             price = float(markets.first().get('price',0).replace(',','.'))
         else:
-            raise HTTP(403, pf_id)
             #raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
+            redirect(URL('bestellungen', args=(), vars=dict(submission=self.submission_id,file_format=self.record.get('format'))))
 
         copies = self.record.get('copies',1)
         copies = int(copies) if str(copies).isdigit() else None
