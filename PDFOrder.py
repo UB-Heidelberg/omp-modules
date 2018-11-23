@@ -197,7 +197,7 @@ class PDFOrder():
             if len(str(self.record.get(line))) > 0:
                 address.append(str(self.record.get(line)))
 
-        address.append(''.join([l for l in ['laendercode','-', 'plz', 'ort'] if len(str(self.record.get(line))) > 0]))
+        address.append(' '.join([self.record.get(l) for l in ['laendercode','-', 'plz', 'ort'] if len(str(self.record.get(line))) > 0]))
 
         for i, line in enumerate(address):
             self.drawParagraph(line, 10, "Normal", 70 + i * 4)
