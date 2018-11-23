@@ -61,11 +61,11 @@ class PDFOrder():
 
         self.record = record.first().as_dict()
 
-        self.submission_id = int(self.record.get('submission_id'))
+        self.submission_id =
 
         self.ompdal = OMPDAL(db, conf)
 
-        self.press_id = self.ompdal.getPress(self.ompdal.getSubmission(self.submission_id)['context_id'])
+        self.press_id = self.ompdal.getSubmission(int(self.record.get('submission_id'))).first()['context_id']
 
         self.styles = getSampleStyleSheet()
 
