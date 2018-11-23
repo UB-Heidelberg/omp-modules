@@ -242,7 +242,7 @@ class PDFOrder():
             price = float(markets.first().get('price',0).replace(',','.'))
         else:
             raise HTTP(403, markets)
-            //raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
+            #raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
 
         copies = self.record.get('copies',1)
         copies = int(copies) if str(copies).isdigit() else None
