@@ -216,9 +216,7 @@ class PDFOrder():
 
         for k, v in PDFOrder.PRESS_CONFIGURATON.items():
             press_id = self.ompdal.getSubmission(int(self.submission_id))['context_id']
-            print(press_id)
-
-            if k == int(1):
+            if k == int(press_id):
                 self.canvas.drawImage(join(self.IM_PATH, v[0]), v[1] * mm,
                                       v[2] * mm, width=v[3] * mm,
                                       height=v[4] * mm,
