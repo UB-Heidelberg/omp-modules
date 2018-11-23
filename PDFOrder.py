@@ -65,8 +65,6 @@ class PDFOrder():
 
         self.ompdal = OMPDAL(db, conf)
 
-        self.press_id = self.ompdal.getSubmission(int(self.record.get('submission_id'))).first()['context_id']
-
         self.styles = getSampleStyleSheet()
 
         self.canvas = canvas.Canvas(pdf_file, pagesize=A4)
@@ -215,7 +213,9 @@ class PDFOrder():
     def drawLogo(self):
 
         for k, v in PDFOrder.PRESS_CONFIGURATON.items():
-            if k == int(self.press_id):
+            press_id = self.ompdal.getSubmission(int(self.submission_id))['context_id']
+
+            if k == int(press_id):
                 self.canvas.drawImage(join(self.IM_PATH, v[0]), v[1] * mm,
                                       v[2] * mm, width=v[3] * mm,
                                       height=v[4] * mm,
