@@ -215,7 +215,7 @@ class PDFOrder():
     def drawLogo(self):
 
         for k, v in PDFOrder.PRESS_CONFIGURATON.items():
-            press_id = self.ompdal.getSubmission(int(self.press_id))['context_id']
+            press_id = self.ompdal.getSubmission(int(self.submission_id))['context_id']
             print(press_id)
 
             if k == int(1):
