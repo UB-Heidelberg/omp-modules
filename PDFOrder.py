@@ -28,8 +28,7 @@ from ompdal import OMPDAL
 
 class PDFOrder():
     ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3',
-                      'mitarbeiter', 'strasse_und_nr', 'plz', 'ort',
-                      'laendercode']
+                      'mitarbeiter', 'strasse_und_nr']
     IMG_PATH = 'applications/knv/static/images'
     PRESS_CONFIGURATON = {
         1: ('Logo_heiBOOKS.png', 150, 255, 50, 40),
@@ -196,16 +195,12 @@ class PDFOrder():
         address = []
         for line in   PDFOrder.ADDRESS_FIELDS:
             if len(str(self.record.get(line))) > 0:
-                #TODO
-                '''
-                vor dem Adress Abstand
-                DE - 69117 Heidelberg
-
-                '''
                 address.append(str(self.record.get(line)))
 
+        address.append(''.join([l for l in ['laendercode','-', 'plz', 'ort'] if len(str(self.record.get(line))) > 0]))
+
         for i, line in enumerate(address):
-            self.drawParagraph(line, 10, "Normal", 65 + i * 4)
+            self.drawParagraph(line, 10, "Normal", 70 + i * 4)
 
     def setFont(self, canvas):
 
