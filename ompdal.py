@@ -192,11 +192,11 @@ class OMPDAL:
         if filter_browse:
             q &= (a.include_in_browse == True)
         return self.db(q).select(
-            a.ALL,
-            orderby=a.seq
-        )
+                a.ALL,
+                orderby=a.seq
+                )
 
-    def getAuthorsByPress(self, press_id, filter_browse=True,  status=3):
+    def getAuthorsByPress(self, press_id, filter_browse=True, status=3):
         """
         Get all authors associated with the specified press regardless of their role.
         """
@@ -207,8 +207,7 @@ class OMPDAL:
         if filter_browse:
             q &= (a.include_in_browse == True)
 
-        return self.db(q).iterselect(a.first_name,a.last_name,a.submission_id,orderby=a.last_name)
-
+        return self.db(q).iterselect(a.first_name, a.last_name, a.submission_id, orderby=a.last_name)
 
     def getActualAuthorsBySubmission(self, submission_id, filter_browse=True):
         """
@@ -283,8 +282,8 @@ class OMPDAL:
         q = (s.press_id == press_id)
 
         return self.db(q).select(
-            s.ALL
-        )
+                s.ALL
+                )
 
     def getSeriesByPathAndPress(self, series_path, press_id):
         """
@@ -329,8 +328,8 @@ class OMPDAL:
         q = (c.press_id == press_id)
 
         return self.db(q).select(
-            c.ALL
-        )
+                c.ALL
+                )
 
     def getCategoriesBySeries(self, series_id):
         """
@@ -422,9 +421,9 @@ class OMPDAL:
         q = (sc.submission_id == submission_id)
 
         return self.db(q).select(
-            sc.ALL,
-            orderby=sc.chapter_seq
-        )
+                sc.ALL,
+                orderby=sc.chapter_seq
+                )
 
     def getChapter(self, chapter_id):
         """
@@ -496,7 +495,8 @@ class OMPDAL:
 
     def getPublicationFormatByName(self, submission_id, name, available=True, approved=True):
         """
-        Get publication format for the given submission where any of the settings for 'name' matches the given string name.
+        Get publication format for the given submission where any of the settings for 'name' matches the given string
+        name.
         """
         pf = self.db.publication_formats
         pfs = self.db.publication_format_settings
@@ -651,8 +651,7 @@ class OMPDAL:
 
         return self.db(q).select(el.date_logged, orderby=el.date_logged)
 
-
     def getMarketsByPublicationFormat(self, publication_format_id):
         m = self.db.markets
-        q = (m.publication_format_id==publication_format_id)
+        q = (m.publication_format_id == publication_format_id)
         return self.db(q).select(m.ALL)

@@ -196,6 +196,12 @@ class PDFOrder():
         address = []
         for line in   PDFOrder.ADDRESS_FIELDS:
             if len(str(self.record.get(line))) > 0:
+                #TODO
+                '''
+                vor dem Adress Abstand
+                DE - 69117 Heidelberg
+
+                '''
                 address.append(str(self.record.get(line)))
 
         for i, line in enumerate(address):
