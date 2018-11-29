@@ -153,7 +153,7 @@ class PDFOrder():
             lastnames  = lastnames[0:4]
             lastnames[3] += ' et al'
 
-        authors = '/'.join(lastnames) + " (Hrsg.):"
+        authors = '/'.join(lastnames)
 
         submission_settings = self.ompdal.getSubmissionSettings(
                 self.submission_id).find(lambda row: row.locale == LOCALE).find(
