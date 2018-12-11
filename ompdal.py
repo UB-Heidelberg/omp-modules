@@ -527,6 +527,7 @@ class OMPDAL:
 
         q = ((sfs.setting_name.lower() == "chapterid")
              & (sfs.setting_value == chapter_id)
+             & (sf.file_id == sfs.file_id)
              & (sf.assoc_id == publication_format_id)
              & (sf.file_stage == 10)
              )
