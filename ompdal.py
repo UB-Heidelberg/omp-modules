@@ -548,7 +548,7 @@ class OMPDAL:
         q = ((sf.submission_id == submission_id)
              & (sf.genre_id == monograph_type_id)
              & (sf.file_stage == 10)
-             & (sf.assoc_iqd == publication_format_id)
+             & (sf.assoc_id == publication_format_id)
              )
 
         res = self.db(q).select(sf.ALL, orderby=sf.revision)
