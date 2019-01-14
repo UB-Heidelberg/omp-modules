@@ -5,7 +5,7 @@ Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
 
-from gluon.html import URL, I
+from gluon.html import URL
 from gluon import current
 from datetime import datetime
 from locale import getlocale, setlocale, getdefaultlocale, LC_TIME
@@ -107,8 +107,6 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
     if series_name and series_pos:
         cit += " ({}, {})".format(series_name, formatSeriesPosition(series_pos))
     cit += "."
-    if doi:
-        cit += " DOI: "
     return cit
 
 
@@ -313,4 +311,9 @@ def seriesPositionCompare(s1, s2):
         return 0
 
 
-
+def formatDoi(doi):
+    """
+     Given a doi like 10.1234/abc123
+      return the full URL: https://doi.org/10.1234/abc123
+    """
+    return "https://doi.org/" + doi
