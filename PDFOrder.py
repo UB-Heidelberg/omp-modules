@@ -22,9 +22,11 @@ import sys
 from decimal import  Decimal
 from gluon.http import HTTP, redirect
 from gluon.html import URL
+import sys
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
+
+
 from ompdal import OMPDAL
 
 
