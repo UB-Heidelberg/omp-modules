@@ -79,9 +79,9 @@ class PDFOrder():
         x, y = x * unit, PDFOrder.HEIGHT - y * unit
         return x, y
 
-    def drawUTFText(self, canvas, x, y, text):
+    def drawUTFText(self,  x, y, text):
 
-        canvas.drawString(x, y, u'{}'.format(text.encode('utf-8')))
+        self.canvas.drawString(x, y, text)
 
 
     def drawParagraph(self, text, size, style, top_margin, left_margin=25):
@@ -126,7 +126,8 @@ class PDFOrder():
     def createShortTitleFlowable(self):
 
         for i, line in enumerate(self.getShortTitle()):
-            self.drawUTFText(self.canvas, 150, 434 - 10 * i, line)
+            self.drawUTFText(150, 434 - 10 * i, line)
+
 
     def createTable(self):
 
@@ -134,7 +135,7 @@ class PDFOrder():
 
         data.append([self.createTableTH(val) for val in PDFOrder.TABLE_HEADERS])
         data.append(["1", self.record.get('copies'), "",
-                     self.record.get('format').decode('utf-8'), self.getISBN(),
+                     self.record.get('format'), self.getISBN(),
                      self.getPrice()])
 
         t = Table(data, colWidths=(
@@ -236,7 +237,6 @@ class PDFOrder():
     def getPrice(self):
         pf_id = self.getPublicationFormatID(self.submission_id)
         markets = self.ompdal.getMarketsByPublicationFormat(pf_id)
-
         if markets:
             price = float(markets.first().get('price',0).replace(',','.'))
         else:
