@@ -60,7 +60,7 @@ class PDFOrder():
 
         self.IM_PATH = join(request.env.web2py_path, PDFOrder.IMG_PATH)
 
-        self.record = record.first().as_dict()
+        self.record = record.as_dict()
 
         self.submission_id = int(self.record.get('submission_id'))
 
@@ -73,6 +73,28 @@ class PDFOrder():
         self.canvas = canvas.Canvas(pdf_file, pagesize=A4)
 
         self.setFont(self.canvas)
+
+    def createPDF(self):
+
+        self.drawLogo()
+
+        self.drawSenderAddress()
+
+        self.drawReceiverAddress()
+
+        self.drawDelliveryNote()
+
+        self.drawOrderSignareOfCustomer()
+
+        self.canvas.line(75, 447, 565, 447)
+
+        self.createTable()
+
+        self.createShortTitleFlowable()
+
+        self.createFooter()
+
+        self.canvas.save()
 
     def coordinates(self, x, y, unit=1):
 
@@ -91,27 +113,7 @@ class PDFOrder():
         p.wrapOn(self.canvas, PDFOrder.WIDTH, PDFOrder.HEIGHT)
         p.drawOn(self.canvas, *self.coordinates(left_margin, top_margin, mm))
 
-    def createPDF(self):
 
-        self.drawLogo()
-
-        self.drawSenderAddress()
-
-        self.drawReceiverAddress()
-
-        self.drawDelliveryNote()
-
-        self.drawOrderSignareOfCustomer()
-
-        self.canvas.line(75, 447, 565, 447 )
-
-        self.createTable()
-
-        self.createShortTitleFlowable()
-
-        self.createFooter()
-
-        self.canvas.save()
 
     def createFooter(self):
 
