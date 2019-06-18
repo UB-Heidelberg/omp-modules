@@ -11,7 +11,7 @@ from datetime import datetime
 from locale import getlocale, setlocale, getdefaultlocale, LC_TIME
 from os.path import exists, join
 from re import findall
-from urllib import urlopen
+
 
 ONIX_INPUT_DATE_MAP = {
     "00": "%Y%m%d",    #Year month day (default).

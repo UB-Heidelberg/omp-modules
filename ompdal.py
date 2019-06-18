@@ -309,27 +309,25 @@ class OMPDAL:
         if res:
             return res.first()
 
-    def getCategoryByPathAndPress(self, category_path, press_id):
+    def getCategoryByPathAndPress(self, category_path, context_id):
         """
         Get the category by path in the given press (unique).
         """
         c = self.db.categories
-        q = ((c.path == category_path) & (c.press_id == press_id))
+        q = ((c.path == category_path) & (c.context_id == context_id))
 
         res = self.db(q).select(c.ALL)
         if res:
             return res.first()
 
-    def getCategoriesByPress(self, press_id):
+    def getCategoriesByPress(self, context_id):
         """
         Get all categories in  press.
         """
         c = self.db.categories
-        q = (c.press_id == press_id)
+        q = (c.context_id == context_id)
 
-        return self.db(q).select(
-                c.ALL
-                )
+        return self.db(q).select(c.ALL)
 
     def getCategoriesBySeries(self, series_id):
         """
@@ -422,7 +420,7 @@ class OMPDAL:
 
         return self.db(q).select(
                 sc.ALL,
-                orderby=sc.chapter_seq
+                orderby=sc.seq
                 )
 
     def getChapter(self, chapter_id):
