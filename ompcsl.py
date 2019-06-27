@@ -86,12 +86,12 @@ class OMPCSL():
             'publisher-place': press_settings.getLocalizedValue('location', ''),
             'publisher': press_settings.getLocalizedValue('publisher', ''),
             'issued': csl_date(date_published),
-            'author': [csl_name(a) for a in authors]
+            'author': [csl_name(a, self.locale) for a in authors]
         }
         if date_first_published:
             csl_data['original-date'] = csl_date(date_first_published.date)
         if editors:
-            csl_data['editor'] = [csl_name(e) for e in editors]
+            csl_data['editor'] = [csl_name(e, self.locale) for e in editors]
         subtitle = submission.settings.getLocalizedValue('subtitle', self.locale)
         if subtitle:
             # Add subtitle to title, because CSL-JSON does not define a separate field for subtitle
@@ -127,7 +127,7 @@ def csl_date(date):
         raise TypeError('date_published must be a string or an instance of datetime.date')
 
 
-def csl_name(author):
+def csl_name(author, locale='en_US'):
     """
     Utility function to build name dict according to CSL JSON specification.
 
@@ -139,9 +139,6 @@ def csl_name(author):
     """
     if not isinstance(author, OMPItem):
         raise TypeError('author must be an OMPItem')
-    given = author.attributes.first_name
-    if author.attributes.middle_name:
-        given += " " + author.attributes.middle_name
-    return {'family': author.attributes.last_name,
-            'given': given,
-            'suffix': author.attributes.suffix}
+    return {'family': author.settings.getLocalizedValue('familyName', locale),
+            'given': author.settings.getLocalizedValue('givenName', locale),
+            'suffix': ''}

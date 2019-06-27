@@ -31,7 +31,7 @@ ONIX_INPUT_DATE_MAP = {
 #    "08": "YYYYWWYYYYWW",    #Spread of week numbers. – not supported
 #    "09": "YYYYQYYYYQ",    #Spread of quarters. – not supported
 #    "10": "YYYYSYYYYS",    #Spread of seasons. – not supported
-#    "11": "YYYYYYYY",    #Spread of years. – not supported  
+#    "11": "YYYYYYYY",    #Spread of years. – not supported
 }
 
 ONIX_OUTPUT_DATE_MAP = {
@@ -64,7 +64,7 @@ ONIX_DATE_ROLES = {
     "23": current.T('Review embargo date'),    #Date from which reviews of a product may be published eg in newspapers and magazines or online. Provided to the book trade for information only: newspapers and magazines are not expected to be recipients of ONIX metadata.
     "25": current.T('Publisher’s reservation order deadline'),    #Latest date on which an order may be placed with the publisher for guaranteed delivery prior to the publication date. May or may not be linked to a special reservation or pre-publication price.
     "26": current.T('Forthcoming reprint date'),    #Date when a product will be reprinted.
-    "27": current.T('Preorder embargo date'),    #Earliest date a retail ‘preorder’ can be placed (where this is distinct from the public announcement date). In the absence of a preorder embargo, advance orders can be placed as soon as metadata is available to the consumer (this would be the public announcement date, or in the absence of a public announcement date, the earliest date metadata is available to the retailer). 
+    "27": current.T('Preorder embargo date'),    #Earliest date a retail ‘preorder’ can be placed (where this is distinct from the public announcement date). In the absence of a preorder embargo, advance orders can be placed as soon as metadata is available to the consumer (this would be the public announcement date, or in the absence of a public announcement date, the earliest date metadata is available to the retailer).
 }
 
 def formatCitation(title, subtitle, authors, editors, date_published, location, press_name, doi, locale,
@@ -85,14 +85,14 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
         contributors = contributors[:1]
         et_al = " et al."
     if len(contributors) == 1:
-        cit = formatName(contributors[0].attributes, reverse=True)
+        cit = formatName(contributors[0].settings, reverse=True)
     else:
-        cit = " , ".join([formatName(c.attributes, reverse=True) for c in contributors[:-1]])
+        cit = " , ".join([formatName(c.settings, reverse=True) for c in contributors[:-1]])
         if contributors:
             cit = " ".join([
                 cit,
                 current.T.translate('and',{}),
-                formatName(contributors[-1].attributes, reverse=True)
+                formatName(contributors[-1].settings, reverse=True)
                 ])
 
     cit = "".join([cit, et_al, edt])+": "
@@ -127,22 +127,25 @@ def formatContributors(contributors=[], max_contributors=3, et_al=True):
     """
     if len(contributors) > max_contributors:
         # Only output the first contributor
-        res = formatName(contributors[0].attributes)
+        res = formatName(contributors[0].settings)
         if et_al:
             res += " et al."
     else:
-        res = ", ".join([formatName(c.attributes) for c in contributors])
+        res = ", ".join([formatName(c.settings) for c in contributors])
     return res
 
-def formatName(author_row, reverse=False):
+
+def formatName(contributor_settings, reverse=False, locale="de_DE"):
     """
-    Format author names for citations.
+    Format contributor names for display.
     """
-    if not reverse:
-        return " ".join([author_row.first_name, author_row.middle_name, author_row.last_name])
-    else:
-        return "{}, {}".format(author_row.last_name, " ".join([author_row.first_name, author_row.middle_name]).strip())
-    
+    family_name = contributor_settings.getLocalizedValue('familyName', locale).strip()
+    given_name = contributor_settings.getLocalizedValue('givenName', locale).strip()
+    if reverse:
+        return "{}, {}".format(family_name, given_name)
+    return " ".join([given_name, family_name])
+
+
 def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
     """
     Format different types of ONIX publication date info with an introductory phrase.
@@ -151,10 +154,10 @@ def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
     if date == datetime(1, 1, 1):
         formatter = current.T('Published %(date)s.')
         date = date_row.date
-        
+
     if not f_out:
         f_out = ONIX_OUTPUT_DATE_MAP.get(date_row.date_format, "%x")
-    
+
     if (date-datetime.now()).days > 0:
         # publication date in the future
         formatter = current.T("To be published %(date_str)s. ## "+f_out)
@@ -163,7 +166,7 @@ def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
         formatter = current.T("Published %(date_str)s. ## "+f_out)
 
     return formatter % dict(date_str = dateToStr(date, locale, f_out))
-    
+
 def formatONIXDate(date_row, locale="de_DE", f_out=""):
     """
     Format different types of ONIX publication date info.
@@ -190,7 +193,7 @@ def dateToStr(date, locale="de_DE", f_out="%x"):
         pass
     # reset locale
     setlocale(LC_TIME, c_locale)
-    
+
     return date
 
 def dateFromRow(date_row):
@@ -221,12 +224,12 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
                        file_row.date_uploaded.strftime('%Y%m%d'),
                        ]
     file_name = '-'.join([str(i) for i in file_name_items])+'.'+file_type
-    
+
     if file_type == 'xml' or file_type == 'html':
         op = 'index'
     else:
         op = 'download'
-    
+
     redirect = ""
     if vgwPublicCode:
         if not vgwServer:
@@ -240,7 +243,7 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
         f=op,
         args=[file_row.submission_id, file_name],
         )
-    
+
 def coverImageLink(request, press_id, submission_id):
     """
     Check, if cover image for a given submission exists, and build link.
@@ -261,7 +264,7 @@ def getSeriesImageLink(request, press_id, image):
         series_image = URL(request.application, 'static', join('files', 'presses', str(press_id), 'series', image[4:].split(';')[1].split('"')[1]))
     except:
         pass
-    
+
     return series_image
 
 def haveMultipleAuthors(chapters):
