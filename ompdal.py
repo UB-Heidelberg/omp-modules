@@ -4,7 +4,7 @@ Copyright (c) 2015 Heidelberg University Library
 Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
-
+import logging
 
 class OMPSettings:
     def __init__(self, rows=[]):
@@ -40,6 +40,7 @@ class OMPDAL:
     def __init__(self, db, conf):
         self.db = db
         self.conf = conf
+        self.logger = logging.getLogger(conf.take('web.application'))
 
     def getAnnouncementsByPress(self, press_id):
         """
@@ -158,8 +159,8 @@ class OMPDAL:
 
     def getPublishedSubmission(self, submission_id, press_id=None):
         """
-        Get submission info for a given submission id, but only return, if the 
-        submission has been published and is associated with a certain press. 
+        Get submission info for a given submission id, but only return, if the
+        submission has been published and is associated with a certain press.
         """
         s = self.db.submissions
 
@@ -196,18 +197,35 @@ class OMPDAL:
                 orderby=a.seq
                 )
 
-    def getAuthorsByPress(self, press_id, filter_browse=True, status=3):
+    def getAuthorsByPress(self, press_id, filter_browse=True, status=3, locale='de_DE'):
         """
         Get all authors associated with the specified press regardless of their role.
         """
-        a = self.db.authors
-        s = self.db.submissions
-        q = ((s.context_id == press_id) & (s.status == status) & (a.submission_id == s.submission_id))
-
+        # TODO This functionality could be covered by the search service
+        select_sql = 'SELECT au_given_names.setting_value as first_name, au_family_names.setting_value as last_name, a.submission_id'
+        from_sql = 'FROM author_settings au_given_names, author_settings au_family_names, authors a, submissions s'
+        conditions = [
+            's.context_id = {}'.format(press_id),
+            's.status = {}'.format(status),
+            'au_given_names.locale = "{}"'.format(locale),
+            'au_family_names.locale = "{}"'.format(locale),
+            'a.submission_id = s.submission_id',
+            'a.author_id = au_given_names.author_id',
+            'a.author_id = au_family_names.author_id',
+            'au_given_names.setting_name = "givenName"',
+            'au_family_names.setting_name = "familyName"']
         if filter_browse:
-            q &= (a.include_in_browse == True)
+            conditions.append('a.include_in_browse = 1')
 
-        return self.db(q).iterselect(a.first_name, a.last_name, a.submission_id, orderby=a.last_name)
+        where_sql = 'WHERE ' + '\n AND '.join(conditions)
+        order_sql = 'ORDER BY last_name'
+        sql = '\n'.join([
+            select_sql,
+            from_sql,
+            where_sql,
+            order_sql
+            ])
+        return self.db.executesql(sql, as_dict=True)
 
     def getActualAuthorsBySubmission(self, submission_id, filter_browse=True):
         """
