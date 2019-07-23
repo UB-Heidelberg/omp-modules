@@ -152,13 +152,15 @@ class PDFOrder():
 
     def getShortTitle(self):
         result = []
-        lastnames = [a['last_name'] for a in
-                        self.ompdal.getAuthorsBySubmission(self.submission_id)]
-        if len(lastnames) > 4 :
-            lastnames  = lastnames[0:4]
-            lastnames[3] += ' et al'
+        #TODO authors
 
-        authors = '/'.join(lastnames)
+        # lastnames = [a['last_name'] for a in
+        #                 self.ompdal.getAuthorsBySubmission(self.submission_id)]
+        # if len(lastnames) > 4 :
+        #     lastnames  = lastnames[0:4]
+        #     lastnames[3] += ' et al'
+        #
+        # authors = '/'.join(lastnames)
 
         submission_settings = self.ompdal.getSubmissionSettings(
                 self.submission_id).find(lambda row: row.locale == LOCALE).find(
@@ -166,7 +168,7 @@ class PDFOrder():
         if len(submission_settings) ==0 :
             raise HTTP(403,'Title not found')
 
-        result += textwrap.wrap(authors, 40)
+        #result += textwrap.wrap(authors, 40)
         result += textwrap.wrap(str(submission_settings.first()['setting_value']),40)
 
         return result
