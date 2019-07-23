@@ -654,4 +654,4 @@ class OMPDAL:
     def getMarketsByPublicationFormat(self, publication_format_id):
         m = self.db.markets
         q = (m.publication_format_id == publication_format_id)
-        return self.db(q).select(m.ALL)
+        return self.db(q).select(m.market_id,m.publication_format_id,m.countries_included,m.countries_excluded,m.regions_included,m.regions_excluded,m.market_date_role,m.market_date_format,m.market_date,m.price,m.discount,m.price_type_code,m.currency_code,m.tax_rate_code,m.tax_type_code,m.agent_id,m.supplier_id)
