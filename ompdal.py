@@ -197,7 +197,7 @@ class OMPDAL:
                 orderby=a.seq
                 )
 
-    def getAuthorsByPress(self, press_id, filter_browse=True, status=3, locale='de_DE'):
+    def getAuthorsByPress(self, press_id, filter_browse=True, status=3):
         """
         Get all authors associated with the specified press regardless of their role.
         """
@@ -207,8 +207,8 @@ class OMPDAL:
         conditions = [
             's.context_id = {}'.format(press_id),
             's.status = {}'.format(status),
-            'au_given_names.locale = "{}"'.format(locale),
-            'au_family_names.locale = "{}"'.format(locale),
+            'au_given_names.locale = s.locale',
+            'au_family_names.locale = s.locale',
             'a.submission_id = s.submission_id',
             'a.author_id = au_given_names.author_id',
             'a.author_id = au_family_names.author_id',
