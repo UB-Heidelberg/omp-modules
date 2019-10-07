@@ -68,11 +68,13 @@ ONIX_DATE_ROLES = {
 }
 
 def formatCitation(title, subtitle, authors, editors, date_published, location, press_name, doi, locale,
-                   series_name="", series_pos="", max_contrib=3, date_first_published=None):
+                   series_name="", series_pos="", max_contrib=3, date_first_published=None,
+                   chapter=None):
     """
     Format a citation in CML.
     """
     cit, et_al, edt = "", "", ""
+
     if editors:
         contributors = list(editors)
         if len(editors) == 1:
@@ -84,10 +86,21 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
     if len(contributors) > max_contrib:
         contributors = contributors[:1]
         et_al = " et al."
+    if chapter:
+        chapter_authors = chapter.associated_items.get('authors', [])
+        chapter_title = chapter.settings.getLocalizedValue('title', locale)
+        if len(chapter_authors) > max_contrib:
+            cit += formatName(chapter_authors[0].settings) + " et al."
+        elif len(chapter_authors) == 1:
+            cit += formatName(chapter_authors[0].settings)
+        else:
+            cit += " , ".join([formatName(c_a.settings) for c_a in chapter_authors[:-1]])
+            cit += " " + current.T.translate('and', {}) + " " + formatName(chapter_authors[-1].settings)
+        cit += ": " + chapter_title + ", in: "
     if len(contributors) == 1:
-        cit = formatName(contributors[0].settings, reverse=True)
+        cit += formatName(contributors[0].settings, reverse=True)
     else:
-        cit = " , ".join([formatName(c.settings, reverse=True) for c in contributors[:-1]])
+        cit += " , ".join([formatName(c.settings, reverse=True) for c in contributors[:-1]])
         if contributors:
             cit = " ".join([
                 cit,
@@ -107,6 +120,10 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
 
     if series_name and series_pos:
         cit += " ({}, {})".format(series_name, formatSeriesPosition(series_pos))
+    if chapter:
+        chapter_pages = chapter.settings.getLocalizedValue('pages', '')
+        if chapter_pages:
+            cit += ", {} {}".format(current.T.translate('p.', {}), chapter_pages)
     cit += "."
     return cit
 

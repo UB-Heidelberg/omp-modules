@@ -6,6 +6,8 @@ LICENSE.md
 '''
 import logging
 
+DOI_SETTING_NAME = 'pub-id::doi'
+
 class OMPSettings:
     def __init__(self, rows=[]):
         self._settings = dict()
