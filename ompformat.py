@@ -94,8 +94,9 @@ def formatCitation(title, subtitle, authors, editors, date_published, location, 
         elif len(chapter_authors) == 1:
             cit += formatName(chapter_authors[0].settings)
         else:
-            cit += " , ".join([formatName(c_a.settings) for c_a in chapter_authors[:-1]])
-            cit += " " + current.T.translate('and', {}) + " " + formatName(chapter_authors[-1].settings)
+            if len(chapter_authors) > 0:
+                cit += " , ".join([formatName(c_a.settings) for c_a in chapter_authors[:-1]])
+                cit += " " + current.T.translate('and', {}) + " " + formatName(chapter_authors[-1].settings)
         cit += ": " + chapter_title + ", in: "
     if len(contributors) == 1:
         cit += formatName(contributors[0].settings, reverse=True)
