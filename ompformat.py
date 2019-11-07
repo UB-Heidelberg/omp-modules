@@ -162,11 +162,11 @@ def formatName(contributor_settings, reverse=False, locale="de_DE"):
     # family name is optional in OMP since 3.1.2
     if not family_name:
         return given_name
-    if reverse:
-        # family name first
-        return "{}, {}".format(family_name, given_name)
+    #if reverse:
+    # family name first
+    return "{}, {}".format(family_name, given_name)
     # given name first
-    return " ".join([given_name, family_name])
+    # return " ".join([given_name, family_name])
 
 
 def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
