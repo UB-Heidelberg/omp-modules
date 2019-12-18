@@ -130,7 +130,8 @@ class OMPDAL:
              & (s.status == status)
              )
 
-        return self.db(q).select(s.ALL, orderby=~s.date_submitted)
+        return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position, orderby=~s.date_submitted)
+
 
     def getSubmissionsByCategory(self, category_id, ignored_submission_id=-1, status=3):
         """
