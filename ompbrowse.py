@@ -91,7 +91,7 @@ class Browser:
 
     def process_submissions(self, s):
 
-        submission_sort = self.submission_sort.get(self.sort_by)
+        #submission_sort = self.submission_sort.get(self.sort_by)
 
         # if self.sort_by == 'seriesPosition-1':
         #     s = sorted(s, cmp=seriesPositionCompare, reverse=False)
@@ -105,7 +105,7 @@ class Browser:
         #     if submission_sort:
         #         s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
 
-        s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
+        #s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
 
     def get_filter_select(self, ul_class="btn-group pull-right"):
