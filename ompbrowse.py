@@ -25,8 +25,8 @@ class Browser:
         self.sort_by = sort_by
         self.submission_sort = self.get_submssion_sort_dict()
 
-        self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
-            'title', self.locale) for x in s if x.associated_items.get('category'))
+        # self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
+        #     'title', self.locale) for x in s if x.associated_items.get('category'))
         #self.submissions = self.filter_submissions(s) if self.filters else s
 
         self.t = len(s)
@@ -79,15 +79,14 @@ class Browser:
         return DIV(button, ul, _class="btn-group pull-left")
 
     def get_sort_select(self, ul_class="btn-group pull-right"):
-
+        return DIV()
         li = [LI(A(current.T(i).capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in
               (self.submission_sort.keys())]
         ul = UL(li, _class="dropdown-menu")
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
         button = TAG.button(current.T("sort by"), SPAN(_class='caret'), **button_cs)
-        return ''
-        #return DIV(button, ul, _class=ul_class)
+        return DIV(button, ul, _class=ul_class)
 
     def process_submissions(self, s):
 
