@@ -39,15 +39,15 @@ class Browser:
     def get_submssion_sort_dict(self):
         # TODO do not change order  ,if changed heiup/views/catalog/index.html change del b.filter_select !!!!
         submission_sort = collections.OrderedDict()
-        submission_sort['datePublished-1'] = [
-            lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), False]
-        submission_sort['datePublished-2'] = [
-            lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), True]
-        # TODO may not work with editors
-        submission_sort['author'] = [lambda s: s.associated_items.get('authors', [])[0].attributes.get('last_name', ''),
-                                     False]
-        submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
-        submission_sort['title-2'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), True]
+        # submission_sort['datePublished-1'] = [
+        #     lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), False]
+        # submission_sort['datePublished-2'] = [
+        #     lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), True]
+        # # TODO may not work with editors
+        # submission_sort['author'] = [lambda s: s.associated_items.get('authors', [])[0].attributes.get('last_name', ''),
+        #                              False]
+        # submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
+        # submission_sort['title-2'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), True]
 
         return submission_sort
 
@@ -86,23 +86,24 @@ class Browser:
         button_cs = {"_type": "button", "_class": "btn btn-default dropdown-toggle", "_data-toggle": "dropdown",
                      "_aria-haspopup": "true", "_aria-expanded": "false"}
         button = TAG.button(current.T("sort by"), SPAN(_class='caret'), **button_cs)
-        return DIV(button, ul, _class=ul_class)
+        return ''
+        #return DIV(button, ul, _class=ul_class)
 
     def process_submissions(self, s):
 
         submission_sort = self.submission_sort.get(self.sort_by)
 
-        if self.sort_by == 'seriesPosition-1':
-            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
-        elif self.sort_by == 'seriesPosition-2':
-            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
-        elif self.sort_by == 'category':
-            s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
-                                                                                                      self.locale) if s.associated_items.get(
-                'category') else False, reverse=False)
-        else:
-            if submission_sort:
-                s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
+        # if self.sort_by == 'seriesPosition-1':
+        #     s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+        # elif self.sort_by == 'seriesPosition-2':
+        #     s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+        # elif self.sort_by == 'category':
+        #     s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
+        #                                                                                               self.locale) if s.associated_items.get(
+        #         'category') else False, reverse=False)
+        # else:
+        #     if submission_sort:
+        #         s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
 
         s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
