@@ -25,11 +25,11 @@ class Browser:
         self.sort_by = sort_by
         self.submission_sort = self.get_submssion_sort_dict()
 
-        # self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
-        #     'title', self.locale) for x in s if x.associated_items.get('category'))
-        #self.submissions = self.filter_submissions(s) if self.filters else s
+        self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
+            'title', self.locale) for x in s if x.associated_items.get('category'))
+        self.submissions = self.filter_submissions(s) if self.filters else s
 
-        self.t = len(s)
+        self.t = len(self.submissions)
         self.total = self.t / p + 1 if self.t % p > 0 else self.t / p
         self.navigation_select = self.get_navigation_select() if self.t > 20 else DIV()
         self.navigation_list = self.get_navigation_list() if self.t > 20 else DIV()
@@ -39,15 +39,15 @@ class Browser:
     def get_submssion_sort_dict(self):
         # TODO do not change order  ,if changed heiup/views/catalog/index.html change del b.filter_select !!!!
         submission_sort = collections.OrderedDict()
-        # submission_sort['datePublished-1'] = [
-        #     lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), False]
-        # submission_sort['datePublished-2'] = [
-        #     lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), True]
-        # # TODO may not work with editors
-        # submission_sort['author'] = [lambda s: s.associated_items.get('authors', [])[0].attributes.get('last_name', ''),
-        #                              False]
-        # submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
-        # submission_sort['title-2'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), True]
+        submission_sort['datePublished-1'] = [
+            lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), False]
+        submission_sort['datePublished-2'] = [
+            lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), True]
+        # TODO may not work with editors
+        submission_sort['author'] = [lambda s: s.associated_items.get('authors', [])[0].attributes.get('last_name', ''),
+                                     False]
+        submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
+        submission_sort['title-2'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), True]
 
         return submission_sort
 
@@ -79,7 +79,7 @@ class Browser:
         return DIV(button, ul, _class="btn-group pull-left")
 
     def get_sort_select(self, ul_class="btn-group pull-right"):
-        return DIV()
+
         li = [LI(A(current.T(i).capitalize(), _href=URL('index?sort_by=' + str(i)))) for i in
               (self.submission_sort.keys())]
         ul = UL(li, _class="dropdown-menu")
@@ -90,25 +90,24 @@ class Browser:
 
     def process_submissions(self, s):
 
-        #submission_sort = self.submission_sort.get(self.sort_by)
+        submission_sort = self.submission_sort.get(self.sort_by)
 
-        # if self.sort_by == 'seriesPosition-1':
-        #     s = sorted(s, cmp=seriesPositionCompare, reverse=False)
-        # elif self.sort_by == 'seriesPosition-2':
-        #     s = sorted(s, cmp=seriesPositionCompare, reverse=False)
-        # elif self.sort_by == 'category':
-        #     s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
-        #                                                                                               self.locale) if s.associated_items.get(
-        #         'category') else False, reverse=False)
-        # else:
-        #     if submission_sort:
-        #         s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
+        if self.sort_by == 'seriesPosition-1':
+            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+        elif self.sort_by == 'seriesPosition-2':
+            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+        elif self.sort_by == 'category':
+            s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
+                                                                                                      self.locale) if s.associated_items.get(
+                'category') else False, reverse=False)
+        else:
+            if submission_sort:
+                s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
 
-        #s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
+        s = s[self.current * self.per_page:(self.current + 1) * self.per_page]
         return s
 
     def get_filter_select(self, ul_class="btn-group pull-right"):
-        return  DIV()
 
         o = [LI(A(current.T('All'), _href=URL('index?filter_by=[]')))]
         opt = [LI(A(s, _href=URL('index?filter_by=[category=' + str(s) + ']'))) for s in self.categories]
