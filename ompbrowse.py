@@ -27,9 +27,9 @@ class Browser:
 
         self.categories = set(x.associated_items.get('category').settings.getLocalizedValue(
             'title', self.locale) for x in s if x.associated_items.get('category'))
-        self.submissions = self.filter_submissions(s) if self.filters else s
+        #self.submissions = self.filter_submissions(s) if self.filters else s
 
-        self.t = len(self.submissions)
+        self.t = len(s)
         self.total = self.t / p + 1 if self.t % p > 0 else self.t / p
         self.navigation_select = self.get_navigation_select() if self.t > 20 else DIV()
         self.navigation_list = self.get_navigation_list() if self.t > 20 else DIV()
@@ -109,6 +109,7 @@ class Browser:
         return s
 
     def get_filter_select(self, ul_class="btn-group pull-right"):
+        return  DIV()
 
         o = [LI(A(current.T('All'), _href=URL('index?filter_by=[]')))]
         opt = [LI(A(s, _href=URL('index?filter_by=[category=' + str(s) + ']'))) for s in self.categories]
