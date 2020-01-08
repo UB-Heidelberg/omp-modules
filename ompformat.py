@@ -272,7 +272,7 @@ def coverImageLink(request, press_id, submission_id):
     Check, if cover image for a given submission exists, and build link.
     """
     cover_image = ''
-    path = request.folder+join('static', 'files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'
+    path = join(request.folder,'static', 'files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'
     for t in ['jpg','png','gif']:
         if exists(path+t):
             cover_image = URL(request.application, 'static', join('files', 'presses', str(press_id), 'monographs', str(submission_id), 'simple', 'cover')+'.'+t)
