@@ -93,13 +93,11 @@ class Browser:
         submission_sort = self.submission_sort.get(self.sort_by)
 
         if self.sort_by == 'seriesPosition-1':
-            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+            s = sorted(s, key=lambda s: s.associated_items.get('seriesPosition-1').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('seriesPosition-1') else False, reverse=False)
         elif self.sort_by == 'seriesPosition-2':
-            s = sorted(s, cmp=seriesPositionCompare, reverse=False)
+            s = sorted(s, key=lambda s: s.associated_items.get('seriesPosition-2').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('seriesPosition-2') else False, reverse=False)
         elif self.sort_by == 'category':
-            s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title',
-                                                                                                      self.locale) if s.associated_items.get(
-                'category') else False, reverse=False)
+            s = sorted(s, key=lambda s: s.associated_items.get('category').settings.getLocalizedValue('title', self.locale) if s.associated_items.get('category') else False, reverse=False)
         else:
             if submission_sort:
                 s = sorted(s, key=submission_sort[0], reverse=submission_sort[1])
