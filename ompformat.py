@@ -11,7 +11,7 @@ from datetime import datetime
 from locale import getlocale, setlocale, getdefaultlocale, LC_TIME
 from os.path import exists, join
 from re import findall
-import urllib
+from urllib.request import urlopen
 
 
 ONIX_INPUT_DATE_MAP = {
@@ -258,7 +258,7 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
         if not vgwServer:
             vgwServer = "http://vg07.met.vgwort.de/na"
         # check, if server is available
-        if urllib.urlopen(vgwServer).getcode() == 200:
+        if urlopen(vgwServer).getcode() == 200:
             redirect = join(vgwServer, vgwPublicCode)+"?l="+url
     return redirect+URL(
         a=request.application,
