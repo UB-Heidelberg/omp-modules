@@ -63,7 +63,7 @@ class Browser:
     def get_navigation_list(self):
         li = []
         al = {'_aria-label': "Page navigation"}
-        for i in range(0, self.total):
+        for i in range(0, int(self.total)):
             l = A(i + 1, _href=URL('index?page_nr=' + str(i + 1)))
             li.append(LI(l, _class="active")) if i == self.current else li.append(LI(l))
 

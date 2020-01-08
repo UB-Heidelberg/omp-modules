@@ -15,7 +15,7 @@ class OMPSettings:
             self._settings.setdefault(row.setting_name, {})[row.locale] = row.setting_value
 
     def getLocalizedValue(self, setting_name, locale, fallback="en_US"):
-        if self._settings.has_key(setting_name):
+        if setting_name in self._settings:
             value = self._settings[setting_name].get(locale, "")
             if not value:
                 value = self._settings[setting_name].get(fallback, "")
@@ -132,7 +132,7 @@ class OMPDAL:
 
         return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position, orderby=~s.date_submitted)
 
-    def getSubmissionsRangeByPress(self, press_id, from_id,to_id, ignored_submission_id=-1, status=3):
+    def getSubmissionsRangeByPress(self, press_id, from_id, to_id, ignored_submission_id=-1, status=3):
         """
         Get submissions range in press with the given status (default: 3=published).
         """
@@ -142,7 +142,8 @@ class OMPDAL:
              & (s.status == status)
              )
 
-        return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position, orderby=~s.date_submitted, limitby=(from_id,to_id))
+        return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position,
+                                 orderby=~s.date_submitted, limitby=(from_id, to_id))
 
 
 
