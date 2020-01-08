@@ -11,7 +11,7 @@ import json
 import os
 from os.path import join
 from string import Template
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 from ompdal import OMPDAL
 
