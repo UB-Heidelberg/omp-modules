@@ -164,7 +164,7 @@ class SiteMap:
         for item in xrange(len(file_list)):
             d = file_list[item][0].split('/')[1]
             if d in paths:
-                j = filter(lambda x: x['path'] == d, dirs) if dirs else d
+                j = list(filter(lambda x: x['path'] == d, dirs) if dirs else d)
                 priority = j[0]['priority'] if j else 0.5
                 file_list[item] = file_list[item] + (priority,)
 
