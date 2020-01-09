@@ -69,10 +69,7 @@ class SiteMap:
 
         submissions = ompdal.getSubmissionsByPress(self.press_id).as_list()
 
-        return list(map(lambda x: (
-            '/catalog/book/{}'.format(x['submission_id']),
-            x['last_modified'].date(), self.monographs_priority),
-                        submissions))
+        return list(map(lambda x: ('/catalog/book/{}'.format(x['submission_id']), x['date_submitted'].date(), self.monographs_priority), submissions))
 
     def create_series(self):
 
