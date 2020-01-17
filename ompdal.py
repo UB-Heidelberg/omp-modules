@@ -508,6 +508,22 @@ class OMPDAL:
 
         return self.db(q).select(pf.ALL)
 
+    def getControlledVocabsBySubmission(self, submission_id):
+        cv = self.db.controlled_vocabs
+        q = (cv.assoc_id == submission_id)
+        return self.db(q).select(cv.ALL)
+
+    def getControlledVocabEntriesByID(self, vocab_id):
+        cv = self.db.controlled_vocab_entries
+        q = (cv.controlled_vocab_id == vocab_id)
+        return self.db(q).select(cv.ALL)
+
+    def controlledVocabEntrySettingsByID(self, entry_id):
+        cv = self.db.controlled_vocab_entry_settings
+        q = (cv.controlled_vocab_entry_id == entry_id)
+        return self.db(q).select(cv.ALL)
+
+
     def getDigitalPublicationFormats(self, submission_id, available=True, approved=True):
         """
         Get all publication formats not marked as physical format for the given submission.
