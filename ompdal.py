@@ -143,7 +143,7 @@ class OMPDAL:
              )
 
         return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position,
-                                 orderby=~s.date_submitted, limitby=(from_id, to_id))
+                                 orderby=~s.date_submitted, limitby=(from_id, to_id), cacheable=True)
 
 
 

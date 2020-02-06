@@ -67,89 +67,106 @@ ONIX_DATE_ROLES = {
     "27": current.T('Preorder embargo date'),    #Earliest date a retail ‘preorder’ can be placed (where this is distinct from the public announcement date). In the absence of a preorder embargo, advance orders can be placed as soon as metadata is available to the consumer (this would be the public announcement date, or in the absence of a public announcement date, the earliest date metadata is available to the retailer).
 }
 
-def formatCitation(title, subtitle, authors, editors, date_published, location, press_name, doi, locale,
-                   series_name="", series_pos="", max_contrib=3, date_first_published=None,
-                   chapter=None):
-    """
-    Format a citation in CML.
-    """
-    cit, et_al, edt = "", "", ""
 
-    if editors:
-        contributors = list(editors)
-        if len(editors) == 1:
-            edt = " "+current.T.translate('(Ed.)',{})
-        else:
-            edt = " "+current.T.translate('(Eds.)',{})
-    else:
-        contributors = list(authors)
-    if len(contributors) > max_contrib:
-        contributors = contributors[:1]
-        et_al = " et al."
-    if chapter:
-        chapter_authors = chapter.associated_items.get('authors', [])
-        chapter_title = chapter.settings.getLocalizedValue('title', locale)
-        if len(chapter_authors) > max_contrib:
-            cit += formatName(chapter_authors[0].settings) + " et al."
-        elif len(chapter_authors) == 1:
-            cit += formatName(chapter_authors[0].settings)
-        else:
-            if len(chapter_authors) > 0:
-                cit += " , ".join([formatName(c_a.settings) for c_a in chapter_authors[:-1]])
-                cit += " " + current.T.translate('and', {}) + " " + formatName(chapter_authors[-1].settings)
-        cit += ": " + chapter_title + ", in: "
-    if len(contributors) == 1:
-        cit += formatName(contributors[0].settings, reverse=True)
-    else:
-        cit += " , ".join([formatName(c.settings, reverse=True) for c in contributors[:-1]])
-        if contributors:
-            cit = " ".join([
-                cit,
-                current.T.translate('and',{}),
-                formatName(contributors[-1].settings, reverse=True)
-                ])
+def formatCitation(title, subtitle, authors, editors, translators, date_published, location, press_name,
+                   locale="de_DE", series_name="", series_pos="", max_contrib=3,
+                   date_first_published=None):
+    """
+    Format a citation according to the rules defined by Heidelberg University Publishing.
 
-    cit = "".join([cit, et_al, edt])+": "
-    cit += title
+    See: https://gitlab.ub.uni-heidelberg.de/wit/verlag-portale/-/wikis/Zitierempfehlung
+    """
     if subtitle:
-        cit += ": "+subtitle
+        title = "{title}: {subtitle}".format(title=title, subtitle=subtitle)
 
-    #cit += ", "+location+": "+press_name + ", " + dateToStr(date_published, locale, "%Y")
-    cit += ", {}: {}, {}".format(location,press_name,dateToStr(date_published, locale, "%Y"))
     if date_first_published and date_first_published.year != date_published.year:
-        cit += dateToStr(date_first_published, locale, " (%Y)")
+        year_first_published = dateToStr(date_first_published, locale, " (%Y)")
+    else:
+        year_first_published = ""
 
     if series_name and series_pos:
-        cit += " ({}, {})".format(series_name, formatSeriesPosition(series_pos))
-    if chapter:
-        chapter_pages = chapter.settings.getLocalizedValue('pages', '')
-        if chapter_pages:
-            cit += ", {} {}".format(current.T.translate('p.', {}), chapter_pages)
-    cit += "."
-    return cit
+        series = " ({}, {})".format(series_name, formatSeriesPosition(series_pos))
+    else:
+        series = ""
+
+    if editors and not authors:
+        # Format attribution for an edited collection only with editors
+        if len(editors) == 1:
+            suffix = current.T.translate('(Ed.)', {})
+        else:
+            suffix = current.T.translate('(Eds.)', {})
+        attribution = "{} {}".format(formatContributors(editors, reverse_name=True, with_and=True,
+                                                        max_contributors=max_contrib), suffix)
+        editors_attribution = ""
+    elif editors and authors:
+        # Monograph with editor
+        attribution = formatContributors(authors, reverse_name=True, with_and=True,
+                                         max_contributors=max_contrib)
+        editors_attribution = "{} {}, ".format(current.T.translate('edited by', {}),
+                                               formatContributors(editors, with_and=True))
+    else:
+        attribution = formatContributors(authors, reverse_name=True, with_and=True)
+        editors_attribution = ""
+
+    if translators:
+        translators_attribution = ", {} {}".format(formatContributors(translators, reverse_name=True, with_and=True),
+                                                   current.T.translate('(Transl.)', {}))
+    else:
+        translators_attribution = ""
+
+    return "{attribution}{translators_attribution}: {title}, {editors_attribution}{location}: "\
+           "{press_name}, {year_published}{year_first_published}{series}.".format(
+               attribution=attribution,
+               translators_attribution=translators_attribution,
+               title=title,
+               editors_attribution=editors_attribution,
+               location=location,
+               press_name=press_name,
+               year_published=date_published.year,
+               year_first_published=year_first_published,
+               series=series
+               )
+
+
+def formatChapterCitation(volume_citation, chapter, locale):
+    attribution = formatContributors(chapter.associated_items.get('authors', []),
+                                     reverse_name=True, with_and=True)
+    pages = chapter.settings.getLocalizedValue('pages', '')
+    return "{attribution}: {title}, in: {volume_citation}{pages}.".format(
+        attribution=attribution,
+        title=chapter.settings.getLocalizedValue('title', locale),
+        volume_citation=volume_citation[:-1],
+        pages=", {} {}".format(current.T.translate('p.', {}), pages) if pages else ""
+    )
 
 
 def formatSeriesPosition(series_pos):
     if series_pos[:1].isdigit():
         # Add translated Vol. for numerical series position
         return " ".join((current.T.translate('Vol.', {}), series_pos))
-    else:
-        # Add translation of prefix from series_pos string
-        parts = series_pos.split(' ')
-        return " ".join((current.T(parts[0], lazy=False), parts[1]))
+    # Add translation of prefix from series_pos string
+    parts = series_pos.split(' ')
+    return " ".join((current.T(parts[0], lazy=False), parts[1]))
 
 
-def formatContributors(contributors=[], max_contributors=3, et_al=True):
+def formatContributors(contributors, max_contributors=3, et_al=True, reverse_name=False, with_and=False):
     """
     Format a list of contributors.
     """
     if len(contributors) > max_contributors:
         # Only output the first contributor
-        res = formatName(contributors[0].settings)
+        res = formatName(contributors[0].settings, reverse=reverse_name)
         if et_al:
             res += " et al."
     else:
-        res = ", ".join([formatName(c.settings) for c in contributors])
+        if with_and and len(contributors) > 1:
+            and_literal = current.T.translate('and', {})
+            res = "{} {} {}".format(
+                " , ".join([formatName(c.settings, reverse=reverse_name) for c in contributors[:-1]]),
+                and_literal, formatName(contributors[-1].settings, reverse=reverse_name))
+        else:
+            res = " , ".join([formatName(c.settings, reverse=reverse_name) for c in contributors])
+
     return res
 
 
@@ -162,11 +179,11 @@ def formatName(contributor_settings, reverse=False, locale="de_DE"):
     # family name is optional in OMP since 3.1.2
     if not family_name:
         return given_name
-    #if reverse:
-    # family name first
-    return "{}, {}".format(family_name, given_name)
+    if reverse:
+        # family name first
+        return "{}, {}".format(family_name, given_name)
     # given name first
-    # return " ".join([given_name, family_name])
+    return " ".join([given_name, family_name])
 
 
 def formatONIXDateWithText(date_row, locale="de_DE", f_out=""):
