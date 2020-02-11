@@ -43,9 +43,19 @@ class Browser:
             lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), False]
         submission_sort['datePublished-2'] = [
             lambda s: min(s.associated_items.get('publication_dates', [datetime(1, 1, 1)])), True]
-        # TODO may not work with editors
-        submission_sort['author'] = [lambda s: s.associated_items.get('authors', [])[0].attributes.get('last_name', ''),
-                                     False]
+        def author_sort_string(s):
+            chapter_authors = s.associated_items.get('chapter_authors', [])
+            authors = s.associated_items.get('authors', [])
+            editors = s.associated_items.get('editors', [])
+            if authors:
+                contribs = authors
+            elif editors:
+                contribs = editors
+            else:
+                contribs = chapter_authors
+            return contribs[0].settings.getLocalizedValue('familyName', self.locale).lower()
+
+        submission_sort['author'] = [author_sort_string, False]
         submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
         submission_sort['title-2'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), True]
 
