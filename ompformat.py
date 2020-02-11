@@ -74,14 +74,15 @@ def formatAttribution(editors, authors, translators, chapter_authors):
     if editors:
         suffix = current.T("(Eds.)") if len(editors) > 1 else current.T("(Ed.)")
         attribution = "{} {}".format(formatContributors(editors, max_contributors=4), suffix)
-    elif authors:
-        attribution = formatContributors(authors, max_contributors=4)
-        if translators:
-            attribution = "{} , {} {}".format(
-                attribution,
-                formatContributors(translators, max_contributors=4), current.T("(Transl.)"))
-    else:
+    if authors:
+        attribution = "{}, {}".format(attribution,
+                                      formatContributors(authors, max_contributors=4))
+    if not editors and not authors:
         attribution = formatContributors(chapter_authors, max_contributors=4)
+    if translators:
+        attribution = "{} , {} {}".format(attribution,
+                                          formatContributors(translators, max_contributors=4),
+                                          current.T("(Transl.)"))
     return attribution
 
 
