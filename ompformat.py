@@ -71,19 +71,19 @@ def formatAttribution(editors, authors, translators, chapter_authors):
     """
       Formats the names of the contributors for the heading in catalog pages
     """
+    parts = []
     if editors:
         suffix = current.T("(Eds.)") if len(editors) > 1 else current.T("(Ed.)")
-        attribution = "{} {}".format(formatContributors(editors, max_contributors=4), suffix)
+        parts.append("{} {}".format(formatContributors(editors, max_contributors=4), suffix))
     if authors:
-        attribution = "{}, {}".format(attribution,
-                                      formatContributors(authors, max_contributors=4))
-    if not editors and not authors:
-        attribution = formatContributors(chapter_authors, max_contributors=4)
+        parts.append(formatContributors(authors, max_contributors=4))
+    if not parts:
+        # No editor or authors assgined. Display chapter authors
+        parts.append(formatContributors(chapter_authors, max_contributors=4))
     if translators:
-        attribution = "{} , {} {}".format(attribution,
-                                          formatContributors(translators, max_contributors=4),
-                                          current.T("(Transl.)"))
-    return attribution
+        parts.append("{} {}".format(formatContributors(translators, max_contributors=4),
+                                    current.T("(Transl.)")))
+    return ', '.join(parts)
 
 
 def formatCitation(title, subtitle, authors, editors, translators, date_published, location, press_name,
