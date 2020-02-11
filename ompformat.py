@@ -67,6 +67,23 @@ ONIX_DATE_ROLES = {
     "27": current.T('Preorder embargo date'),    #Earliest date a retail ‘preorder’ can be placed (where this is distinct from the public announcement date). In the absence of a preorder embargo, advance orders can be placed as soon as metadata is available to the consumer (this would be the public announcement date, or in the absence of a public announcement date, the earliest date metadata is available to the retailer).
 }
 
+def formatAttribution(editors, authors, translators, chapter_authors):
+    """
+      Formats the names of the contributors for the heading in catalog pages
+    """
+    if editors:
+        suffix = current.T("(Eds.)") if len(editors) > 1 else current.T("(Ed.)")
+        attribution = "{} {}".format(formatContributors(editors, max_contributors=4), suffix)
+    elif authors:
+        attribution = formatContributors(authors, max_contributors=4)
+        if translators:
+            attribution = "{} , {} {}".format(
+                attribution,
+                formatContributors(translators, max_contributors=4), current.T("(Transl.)"))
+    else:
+        attribution = formatContributors(chapter_authors, max_contributors=4)
+    return attribution
+
 
 def formatCitation(title, subtitle, authors, editors, translators, date_published, location, press_name,
                    locale="de_DE", series_name="", series_pos="", max_contrib=3,
