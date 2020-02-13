@@ -53,7 +53,11 @@ class Browser:
                 contribs = editors
             else:
                 contribs = chapter_authors
-            return contribs[0].settings.getLocalizedValue('familyName', self.locale).lower()
+            name = contribs[0].settings.getLocalizedValue('familyName', self.locale).lower()
+            if name:
+                return name
+            else:
+                return contribs[0].settings.getLocalizedValue('givenName', self.locale).lower()
 
         submission_sort['author'] = [author_sort_string, False]
         submission_sort['title-1'] = [lambda s: s.settings.getLocalizedValue('title', self.locale).lower(), False]
