@@ -318,7 +318,7 @@ class OMPDAL:
         q = (s.press_id == press_id)
 
         return self.db(q).select(
-                s.ALL
+                s.ALL, orderby=s.seq
                 )
 
     def getSeriesByPathAndPress(self, series_path, press_id):
