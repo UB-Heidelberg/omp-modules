@@ -146,6 +146,26 @@ class OMPDAL:
                                  orderby=~s.date_submitted, limitby=(from_id, to_id), cacheable=True)
 
 
+    def getPublishedSubmissionsRangeByPressSorted(self, press_id, from_id, to_id,
+                                                  ignored_submission_id=-1, status=3,
+                                                  order_by='date_published', order_by_ascending=True):
+        """
+        Get submissions range in press with the given status (default: 3=published).
+        """
+        ps = self.db.published_submissions
+        s = self.db.submissions
+        q = ((s.context_id == press_id)
+             & (s.submission_id != ignored_submission_id)
+             & (s.status == status)
+             & (s.submission_id == ps.submission_id)
+             )
+        order_by = getattr(ps, order_by)
+        if not order_by_ascending:
+            order_by = ~order_by
+        return self.db(q).select(s.submission_id, s.series_id, s.date_submitted, s.series_position,
+                                 ps.date_published, orderby=order_by,
+                                 limitby=(from_id, to_id), cacheable=True)
+
 
 
     def getSubmissionsByCategory(self, category_id, ignored_submission_id=-1, status=3):
