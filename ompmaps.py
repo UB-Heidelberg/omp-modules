@@ -69,9 +69,12 @@ class SiteMap:
         self.templates = Templates()
         self.static_path = '{}/{}'.format(self.path, 'static')
         self.views_path = '{}/{}'.format(self.path, 'views')
+        self.chapters_priority = 0.8
         self.monographs_priority = 0.9
         self.series_priority = 0.9
         self.ignore_apps = ['heiup']
+        self.db = db
+        self.sc = self.db.submission_chapters
 
 
     def createFileEntry(self, file_row):
@@ -97,15 +100,19 @@ class SiteMap:
         result = []
         submissions = ompdal.getSubmissionsByPress(self.press_id).as_list()
 
-        result += sorted(list(map(lambda x: ('/catalog/book/{}'.format(x['submission_id']), x['date_submitted'].date(), self.monographs_priority), submissions)))
+        result += list(map(lambda x: ('/catalog/book/{}'.format(x['submission_id']), x['date_submitted'].date(), self.monographs_priority), submissions))
 
-        pdf = [(x['submission_id'], ompdal.getPublicationFormatByName(x['submission_id'], 'PDF').first()) for x in submissions if ompdal.getPublicationFormatByName(x['submission_id'], 'PDF')]
-        result += [self.createFileEntry(ompdal.getLatestRevisionOfFullBookFileByPublicationFormat(x[0], x[1]['publication_format_id']), ) for x in pdf if x]
 
-        html = [(x['submission_id'], ompdal.getPublicationFormatByName(x['submission_id'], 'HTML').first()) for x in submissions if ompdal.getPublicationFormatByName(x['submission_id'], 'HTML')]
-        result += [self.createFileEntry(ompdal.getLatestRevisionOfFullBookFileByPublicationFormat(x[0], x[1]['publication_format_id']), ) for x in html if x]
+        for s in submissions:
+            formats = ompdal.getDigitalPublicationFormats(s['submission_id'], available=True, approved=True)
+            for f in formats:
+                file_row = ompdal.getLatestRevisionOfFullBookFileByPublicationFormat(s['submission_id'], f.publication_format_id)
+                if file_row:
+                    result.append(self.createFileEntry(file_row))
 
-        return result
+            result += self.createChapters(s)
+
+        return sorted(result)
 
 
     def createSeries(self):
@@ -163,7 +170,7 @@ class SiteMap:
             if not self.IsValidURL(s[0]):
                 l.remove(s)
 
-        entries = self.templates.URLSet(list(map(lambda x: self.templates.url(x), l)))
+        entries = self.templates.URLSet(list(map(lambda x: self.templates.url(x), l))) if l else []
         return entries
 
 
@@ -240,6 +247,37 @@ class SiteMap:
         f.close()
 
 
+    def createChapters(self, s):
+        """
+        Creates chapter entries
+        :param s:
+        :return: array
+        """
+        result = []
+        chapter_rows = self.db(self.sc.submission_id == s['submission_id']).select(self.sc.chapter_id).as_list()
+        formats = ompdal.getDigitalPublicationFormats(s['submission_id'], available=True, approved=True)
+        for c in chapter_rows:
+            chapter_settings_rows = ompdal.getChapterSettings(c['chapter_id']).as_list()
+            if self.getTableSetting(chapter_settings_rows, 'pub-id::doi'):
+                result.append(('/catalog/book/{}/c{}'.format(s['submission_id'], c['chapter_id']), s['date_submitted'].date(), self.chapters_priority))
+
+                for pf in formats:
+                   result += [self.createFileEntry(ompdal.getLatestRevisionOfChapterFileByPublicationFormat(c['chapter_id'], pf.publication_format_id), ) for pf in formats]
+
+        return result
+
+
+    def getTableSetting(self, settings_list, name):
+        """
+        get table setting from OMP
+        :param settings_list: array
+        :param name:
+        :return:
+        """
+        result = ''.join(set([settings['setting_value'] for settings in settings_list if settings['setting_name'] == name]))
+        return result
+
 if __name__ == '__main__':
     s = SiteMap()
     s.createSiteMap()
+
