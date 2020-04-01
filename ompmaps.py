@@ -88,7 +88,7 @@ class SiteMap:
         file_name = '-'.join([str(i) for i in items]) + '.' + type
         op = 'index' if type == 'xml' or type == 'html' else 'download'
 
-        file_path = (join('/reader', op, str(file_row.submission_id), file_name), file_row.date_modified, 0.4)
+        file_path = (join('/reader', op, str(file_row.submission_id), file_name), file_row.date_modified.date(), 0.4)
         return file_path
 
 
