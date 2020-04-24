@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from decimal import Decimal
-
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import inch, mm, cm
+from reportlab.lib.units import cm, mm
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, Table, TableStyle
-from reportlab.graphics.shapes import Line, Drawing
-
 
 LOCALE = 'de_DE'
 
@@ -19,17 +15,17 @@ from reportlab.pdfbase.ttfonts import TTFont
 import textwrap
 from os.path import join
 import sys
-from decimal import  Decimal
-from gluon.http import HTTP, redirect
-from gluon.html import URL
+from gluon.http import HTTP
+import importlib
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+importlib.reload(sys)
+
+# sys.setdefaultencoding('utf-8')
 from ompdal import OMPDAL
 
 
 class PDFOrder():
-    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3','strasse_und_nr']
+    ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3', 'strasse_und_nr']
     IMG_PATH = 'applications/knv/static/images'
     PRESS_CONFIGURATON = {
         1: ('Logo_heiBOOKS.png', 150, 255, 50, 40),
@@ -37,7 +33,7 @@ class PDFOrder():
         3: ('Logo_Propylaeum.png', 140, 262, 60, 30),
         4: ('Logo_Crossasia.png', 150, 262, 50, 30),
         6: ('Logo_heiUP.png', 61, 244, 135, 55)
-        }
+    }
     FOOTER = ['Bitte nicht buchen, Rechnung folgt.',
               'Bei Rückfragen wenden Sie sich bitte an <a '
               'href="mailto:heiUP@ub.uni-heidlberg.de"><u><font '
@@ -46,21 +42,23 @@ class PDFOrder():
               ]
     FONTS = [('ArialMT', 'Arial.ttf', 10), ('DejaVu', 'DejaVuSans.ttf', 9.5)]
     TABLE_STYLE = TableStyle(
-            [('VALIGN', (0, 0), (-1, -1), "TOP"),
-             ('ALIGN', (0, 0), (-1, -1), "LEFT"),
-             ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.transparent),
-             ('BOX', (0, 0), (-1, -1), 0.25, colors.transparent)
-             ])
+        [('VALIGN', (0, 0), (-1, -1), "TOP"),
+         ('ALIGN', (0, 0), (-1, -1), "LEFT"),
+         ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.transparent),
+         ('BOX', (0, 0), (-1, -1), 0.25, colors.transparent)
+         ])
     TABLE_HEADERS = ['Pos.', 'Menge', 'Kurztitel', 'Einband', 'ISBN', 'Preis']
     WIDTH, HEIGHT = A4
+
 
     def __init__(self, pdf_file, request, record, db, conf):
 
         self.IM_PATH = join(request.env.web2py_path, PDFOrder.IMG_PATH)
-
-        self.record = record.first().as_dict()
+        self.record = record.as_dict()
 
         self.submission_id = int(self.record.get('submission_id'))
+
+        self.db = db
 
         self.ompdal = OMPDAL(db, conf)
 
@@ -72,14 +70,16 @@ class PDFOrder():
 
         self.setFont(self.canvas)
 
+
     def coordinates(self, x, y, unit=1):
 
         x, y = x * unit, PDFOrder.HEIGHT - y * unit
         return x, y
 
+
     def drawUTFText(self, canvas, x, y, text):
 
-        canvas.drawString(x, y, u'{}'.format(text.encode('utf-8')))
+        canvas.drawString(x, y, u'{}'.format(text))
 
 
     def drawParagraph(self, text, size, style, top_margin, left_margin=25):
@@ -88,6 +88,7 @@ class PDFOrder():
                       self.styles[style])
         p.wrapOn(self.canvas, PDFOrder.WIDTH, PDFOrder.HEIGHT)
         p.drawOn(self.canvas, *self.coordinates(left_margin, top_margin, mm))
+
 
     def createPDF(self):
 
@@ -101,7 +102,7 @@ class PDFOrder():
 
         self.drawOrderSignareOfCustomer()
 
-        self.canvas.line(75, 447, 565, 447 )
+        self.canvas.line(75, 447, 565, 447)
 
         self.createTable()
 
@@ -111,20 +112,22 @@ class PDFOrder():
 
         self.canvas.save()
 
+
     def createFooter(self):
 
-
         customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
-        for i,line in enumerate(customer_notice):
-            self.drawParagraph(line, 9, "Normal", 230-len(customer_notice)*5 + 5*i)
+        for i, line in enumerate(customer_notice):
+            self.drawParagraph(line, 9, "Normal", 230 - len(customer_notice) * 5 + 5 * i)
 
         for i, part in enumerate(PDFOrder.FOOTER):
             self.drawParagraph(part, 9, "Normal", 250 + 10 * i)
+
 
     def createShortTitleFlowable(self):
 
         for i, line in enumerate(self.getShortTitle()):
             self.drawUTFText(self.canvas, 150, 434 - 10 * i, line)
+
 
     def createTable(self):
 
@@ -132,7 +135,7 @@ class PDFOrder():
 
         data.append([self.createTableTH(val) for val in PDFOrder.TABLE_HEADERS])
         data.append(["1", self.record.get('copies'), "",
-                     self.record.get('format').decode('utf-8'), self.getISBN(),
+                     self.record.get('format'), self.getISBN(),
                      self.getPrice()])
 
         t = Table(data, colWidths=(
@@ -145,56 +148,89 @@ class PDFOrder():
 
         t.drawOn(self.canvas, *self.coordinates(25, 145, mm))
 
+
+    def getAuthorList(self, submission_id, chapter_id=0):
+        contribs = []
+        aut = self.db.authors
+        ugs = self.db.user_group_settings
+        sca = self.db.submission_chapter_authors
+        if chapter_id > 0:
+            contribs = self.db(sca.chapter_id == chapter_id).select(sca.author_id, distinct=True).as_list()
+        else:
+            contribs = self.db((aut.submission_id == submission_id) & (aut.user_group_id == ugs.user_group_id) & (ugs.setting_name == 'abbrev') & (ugs.setting_value != "CA")).select(aut.author_id,
+                                                                                                                                                                                      distinct=True).as_list()
+
+        authors = []
+        for contrib in contribs:
+            author = {}
+            role = self.db((ugs.user_group_id == aut.user_group_id) & (aut.author_id == contrib["author_id"]) & (
+                    ugs.setting_name == "name")).select(ugs.setting_value)
+            if role:
+                author["role"] = role.first().as_dict().get("setting_value")
+
+            author_settings = self.ompdal.getAuthorSettings(contrib["author_id"]).as_list()
+            for setting in author_settings:
+                author[setting['setting_name']] = setting["setting_value"]
+            authors.append(author)
+        return authors
+
+
     def getShortTitle(self):
         result = []
-        lastnames = [a['last_name'] for a in
-                        self.ompdal.getAuthorsBySubmission(self.submission_id)]
-        if len(lastnames) > 4 :
-            lastnames  = lastnames[0:4]
-            lastnames[3] += ' et al'
+        authorsList = self.getAuthorList(self.submission_id)
+        lastNames = [i['givenName'] for i in authorsList]
 
-        authors = '/'.join(lastnames)
+        if len(lastNames) > 4:
+            lastNames = lastNames[0:4]
+            lastNames[3] += ' et al'
+
+        authors = '/'.join(lastNames)
 
         submission_settings = self.ompdal.getSubmissionSettings(
-                self.submission_id).find(lambda row: row.locale == LOCALE).find(
-                lambda row: row.setting_name == 'title')
-        if len(submission_settings) ==0 :
-            raise HTTP(403,'Title not found')
+            self.submission_id).find(lambda row: row.locale == LOCALE).find(
+            lambda row: row.setting_name == 'title')
+        if len(submission_settings) == 0:
+            raise HTTP(403, 'Title not found')
 
         result += textwrap.wrap(authors, 40)
-        result += textwrap.wrap(str(submission_settings.first()['setting_value']),40)
+        result += textwrap.wrap(submission_settings.first()['setting_value'], 40)
 
         return result
+
 
     def createTableTH(self, content):
 
         return Paragraph('<b>%s</b>' % content, styleSheet["BodyText"])
 
+
     def drawOrderSignareOfCustomer(self):
         if self.record.get('item_number'):
-            self.drawParagraph('{} {}'.format('Bestellzeichen Kunde:',self.record.get('item_number')),10, "Normal", 129.5, left_margin=140)
+            self.drawParagraph('{} {}'.format('Bestellzeichen Kunde:', self.record.get('item_number')), 10, "Normal", 129.5, left_margin=140)
+
 
     def drawDelliveryNote(self):
 
         self.drawParagraph(
-                '{} {}'.format('Lieferschein vom',
-                               self.record.get('sent_date')),
-                10, "Normal", 125)
+            '{} {}'.format('Lieferschein vom',
+                           self.record.get('sent_date')),
+            10, "Normal", 125)
         self.drawParagraph(
-                '{} {}-{}'.format('Lieferschein Nr. ub-pub-',
-                                  self.record.get('curyear'),
-                                  str(self.record.get('order_number')).rjust(5,
-                                                                             "0")),
-                10, "Normal", 129.5)
+            '{} {}-{}'.format('Lieferschein Nr. ub-pub-',
+                              self.record.get('curyear'),
+                              str(self.record.get('order_number')).rjust(5,
+                                                                         "0")),
+            10, "Normal", 129.5)
+
 
     def drawSenderAddress(self):
 
         self.drawParagraph(self.record.get('abs_zeile1'), 6, "Normal", 60)
         self.drawParagraph(self.record.get('abs_zeile2'), 6, "Normal", 62.5)
 
+
     def drawReceiverAddress(self):
         address = []
-        for line in   PDFOrder.ADDRESS_FIELDS:
+        for line in PDFOrder.ADDRESS_FIELDS:
             if len(str(self.record.get(line))) > 0:
                 address.append(str(self.record.get(line)))
 
@@ -203,11 +239,13 @@ class PDFOrder():
         for i, line in enumerate(address):
             self.drawParagraph(line, 10, "Normal", 70 + i * 4)
 
+
     def setFont(self, canvas):
 
         for f in PDFOrder.FONTS:
             pdfmetrics.registerFont(TTFont(f[0], f[1]))
             canvas.setFont(f[0], f[2])
+
 
     def drawLogo(self):
 
@@ -219,39 +257,37 @@ class PDFOrder():
                                       height=v[4] * mm,
                                       preserveAspectRatio=True, mask='auto')
 
+
     def getISBN(self):
         pf_id = self.getPublicationFormatID(self.submission_id)
-        ics = self.ompdal.getIdentificationCodesByPublicationFormat(pf_id) if pf_id  else None
+        ics = self.ompdal.getIdentificationCodesByPublicationFormat(pf_id) if pf_id else None
         isbn = ics.first().get('value') if ics else ''
         return isbn
 
-    def getPublicationFormatID(self,submission_id):
+
+    def getPublicationFormatID(self, submission_id):
         pfs = self.ompdal.getPublicationFormatByName(submission_id,
                                                      self.record.get('format'))
         pf_id = pfs.first().get('publication_format_id') if pfs else None
         return pf_id
+
 
     def getPrice(self):
         pf_id = self.getPublicationFormatID(self.submission_id)
         markets = self.ompdal.getMarketsByPublicationFormat(pf_id)
 
         if markets:
-            price = float(markets.first().get('price',0).replace(',','.'))
+            price = float(markets.first().get('price', 0).replace(',', '.'))
         else:
             raise HTTP(403, 'Bitte geben Sie den Preis für {}  ein'.format(self.record.get('format')))
 
-
-        copies = self.record.get('copies',1)
+        copies = self.record.get('copies', 1)
         copies = int(copies) if str(copies).isdigit() else None
         currency_rate = int(self.record.get('currency_rate', 1.0))
 
         total = '{:5.2f}'.format(price * copies * currency_rate) if copies and price else ''
 
-        if self.record.get('price_formattng')=='Komma':
-            total = total.replace('.','.')
+        if self.record.get('price_formattng') == 'Komma':
+            total = total.replace('.', '.')
 
-        return '{} {}'.format(total, self.record.get("currency","€"))
-
-
-
-
+        return '{} {}'.format(total, self.record.get("currency", "€"))
