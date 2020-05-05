@@ -114,8 +114,9 @@ class PDFOrder():
 
 
     def createFooter(self):
-
-        customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
+        customer_notice = ''
+        if self.record.get('customer_notice'):
+            customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
         for i, line in enumerate(customer_notice):
             self.drawParagraph(line, 9, "Normal", 230 - len(customer_notice) * 5 + 5 * i)
 
@@ -178,7 +179,7 @@ class PDFOrder():
     def getShortTitle(self):
         result = []
         authorsList = self.getAuthorList(self.submission_id)
-        lastNames = [i['givenName'] for i in authorsList]
+        lastNames = [i.get('familyName') for i in authorsList]
 
         if len(lastNames) > 4:
             lastNames = lastNames[0:4]
@@ -231,7 +232,7 @@ class PDFOrder():
     def drawReceiverAddress(self):
         address = []
         for line in PDFOrder.ADDRESS_FIELDS:
-            if len(str(self.record.get(line))) > 0:
+            if len(str(self.record.get(line))) > 0 and self.record.get(line) is not None:
                 address.append(str(self.record.get(line)))
 
         address.append(' '.join([self.record.get(l) for l in ['laendercode', 'plz', 'ort'] if len(str(self.record.get(l))) > 0]))
