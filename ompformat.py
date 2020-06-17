@@ -289,13 +289,12 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
         op = 'download'
 
     redirect = ""
-    # nw - 10.6.2020 - Disabled because of issues with vgwort Redirect
-    # if vgwPublicCode:
-    #     if not vgwServer:
-    #         vgwServer = "https://vg07.met.vgwort.de/na"
-    #     # check, if server is available
-    #     if urlopen(vgwServer).getcode() == 200:
-    #         redirect = join(vgwServer, vgwPublicCode)+"?l="+url
+    if vgwPublicCode:
+        if not vgwServer:
+            vgwServer = "https://vg07.met.vgwort.de/na"
+        # check, if server is available
+        if urlopen(vgwServer).getcode() == 200:
+            redirect = join(vgwServer, vgwPublicCode)+"?l="+url
     return redirect+URL(
         a=request.application,
         c='reader',
