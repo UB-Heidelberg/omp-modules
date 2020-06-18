@@ -44,6 +44,17 @@ class OMPDAL:
         self.conf = conf
         self.logger = logging.getLogger(conf.take('web.application'))
 
+    def getAnnouncementWithSettings(self, announcement_id):
+        """
+        Get announcement by id, including setting values and return as dictionary.
+        """
+        a = self.db.announcements(announcement_id).as_dict()
+        q = (self.db.announcement_settings.announcement_id == announcement_id)
+
+        for row in self.db(q).select(self.db.announcement_settings.ALL):
+            a.setdefault(row.setting_name, {})[row.locale] = row.setting_value
+        return a
+
     def getAnnouncementsByPress(self, press_id):
         """
         Get announcement by press
@@ -52,6 +63,25 @@ class OMPDAL:
         q = (a.assoc_id == press_id)
 
         return self.db(q).select(a.ALL, orderby=~a.date_posted)
+
+    def getAnnouncementsByPressGroupedByYearAndMonth(self, press_id, locale):
+        """
+        Get announcement by press and year, month
+        """
+        sql = ' '.join([
+            'Select a.date_posted date, a.announcement_id id, an_s.setting_value as title',
+            'from announcements a, announcement_settings an_s',
+            'where assoc_id = {}'.format(press_id),
+            'and an_s.announcement_id = a.announcement_id',
+            'and an_s.locale = "{}"'.format(locale),
+            'and an_s.setting_name = "title"',
+            'order by date_posted desc'
+        ])
+        by_years_and_months = {}
+        for row in self.db.executesql(sql, as_dict=True):
+            date = row['date']
+            by_years_and_months.setdefault(date.year, {}).setdefault(date.month, []).append(row)
+        return by_years_and_months
 
     def getAnnouncementsByType(self, t):
         """
