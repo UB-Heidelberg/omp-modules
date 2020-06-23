@@ -289,7 +289,7 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
         op = 'download'
 
     redirect = ""
-    if vgwPublicCode:
+    if vgwPublicCode and op == 'download':
         if not vgwServer:
             vgwServer = "https://vg07.met.vgwort.de/na"
         # check, if server is available
