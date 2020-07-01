@@ -81,7 +81,7 @@ class OMPDAL:
         by_years_and_months = OrderedDict()
         for row in self.db.executesql(sql, as_dict=True):
             date = row['date']
-            by_years_and_months.setdefault(date.year, {}).setdefault(date.month, []).append(row)
+            by_years_and_months.setdefault(date.year, OrderedDict()).setdefault(date.month, []).append(row)
         return by_years_and_months
 
     def getAnnouncementsByType(self, t):
