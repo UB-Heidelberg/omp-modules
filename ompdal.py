@@ -5,6 +5,7 @@ Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
 import logging
+from collections import OrderedDict
 
 DOI_SETTING_NAME = 'pub-id::doi'
 
@@ -77,7 +78,7 @@ class OMPDAL:
             'and an_s.setting_name = "title"',
             'order by date_posted desc'
         ])
-        by_years_and_months = {}
+        by_years_and_months = OrderedDict()
         for row in self.db.executesql(sql, as_dict=True):
             date = row['date']
             by_years_and_months.setdefault(date.year, {}).setdefault(date.month, []).append(row)
