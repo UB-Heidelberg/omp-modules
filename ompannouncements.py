@@ -99,7 +99,7 @@ class Announcements:
         posted__date = a['date_posted'].date()
         div_date = P(posted__date.strftime("%d.%m.%Y "), _class="media-heading")
         div_heading = H5(XML(title))
-        link = DIV(A(current.T('more'), _href=URL('aktuelles', 'eintrag', args=[a['announcement_id']]))) if extLink else ''
+        link = DIV(A(current.T('More'), _href=URL('aktuelles', 'eintrag', args=[a['announcement_id']]))) if extLink else ''
 
         div_short_description = DIV(XML(description_short), link, _class="boxText")
         div_body = DIV(div_date, div_heading, div_short_description, _class="media-body")
