@@ -4,6 +4,7 @@ Copyright (c) 2015 Heidelberg University Library
 Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
+import re
 from operator import itemgetter
 import logging
 from collections import OrderedDict
@@ -223,9 +224,13 @@ class OMPDAL:
         """
         series_settings = OMPSettings(self.getSeriesSettings(series_id))
         sort_option = series_settings.getValues('sortOption')['']
+
+        def extract_series_position(row):
+            return tuple(int(s) for s in re.findall(r'\d+', row.series_position))
+
         sort_parameters = {
-            'seriesPosition-2': dict(key=itemgetter('series_position'), reverse=True),
-            'seriesPosition-1': dict(key=itemgetter('series_position'), reverse=False),
+            'seriesPosition-2': dict(key=extract_series_position, reverse=True),
+            'seriesPosition-1': dict(key=extract_series_position, reverse=False),
             'title-1': dict(key=lambda row: row.submission_settings.setting_value, reverse=False),
             'title-2': dict(key=lambda row: row.submission_settings.setting_value, reverse=True),
             'datePublished-2': dict(key=lambda row: row.published_submissions.date_published, reverse=True),
