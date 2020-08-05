@@ -4,10 +4,12 @@ Copyright (c) 2015 Heidelberg University Library
 Distributed under the GNU GPL v3. For full terms see the file
 LICENSE.md
 '''
+from operator import itemgetter
 import logging
 from collections import OrderedDict
 
 DOI_SETTING_NAME = 'pub-id::doi'
+
 
 class OMPSettings:
     def __init__(self, rows=[]):
@@ -214,17 +216,41 @@ class OMPDAL:
 
         return self.db(q).select(s.ALL)
 
-    def getSubmissionsBySeries(self, series_id, ignored_submission_id=-1, status=3):
+    def getSubmissionsBySeries(self, series_id, ignored_submission_id=-1, status=3, respect_sort_option=True):
         """
         Get all submissions in a series with the given status (default: 3=published).
+
         """
+        series_settings = OMPSettings(self.getSeriesSettings(series_id))
+        sort_option = series_settings.getValues('sortOption')['']
+        sort_parameters = {
+            'seriesPosition-2': dict(key=itemgetter('series_position'), reverse=True),
+            'seriesPosition-1': dict(key=itemgetter('series_position'), reverse=False),
+            'title-1': dict(key=lambda row: row.submission_settings.setting_value, reverse=False),
+            'title-2': dict(key=lambda row: row.submission_settings.setting_value, reverse=True),
+            'datePublished-2': dict(key=lambda row: row.published_submissions.date_published, reverse=True),
+            'datePublished-1': dict(key=lambda row: row.published_submissions.date_published, reverse=False),
+        }
+
         s = self.db.submissions
+        ss = self.db.submission_settings
         q = ((s.series_id == series_id)
              & (s.submission_id != ignored_submission_id)
              & (s.status == status)
              )
-
-        return self.db(q).select(s.ALL, orderby=~s.series_position)
+        if sort_option.startswith('title'):
+            joins = ss.on((s.submission_id == ss.submission_id) & (ss.setting_name == 'title') & (ss.locale == 'de_DE'))
+        elif sort_option.startswith('datePublished'):
+            ps = self.db.published_submissions
+            joins = ps.on(s.submission_id == ps.submission_id)
+        else:
+            joins = None
+        rows_iterator = self.db(q).select(join=joins)
+        if respect_sort_option:
+            # use the dict stored in the sort_parameters dict as arguments for the sort method
+            return (rows.submissions for rows in sorted(rows_iterator, **sort_parameters[sort_option]))
+        else:
+            return list(rows_iterator)
 
     def getPublishedSubmission(self, submission_id, press_id=None):
         """
