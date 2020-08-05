@@ -248,7 +248,10 @@ class OMPDAL:
         rows_iterator = self.db(q).select(join=joins)
         if respect_sort_option:
             # use the dict stored in the sort_parameters dict as arguments for the sort method
-            return (rows.submissions for rows in sorted(rows_iterator, **sort_parameters[sort_option]))
+            if joins:
+                return [rows.submissions for rows in sorted(rows_iterator, **sort_parameters[sort_option])]
+            else:
+                return sorted(rows_iterator, **sort_parameters[sort_option])
         else:
             return list(rows_iterator)
 
