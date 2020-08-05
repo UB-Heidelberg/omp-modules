@@ -226,7 +226,12 @@ class OMPDAL:
         sort_option = series_settings.getValues('sortOption')['']
 
         def extract_series_position(row):
-            return tuple(int(s) for s in re.findall(r'\d+', row.series_position))
+            # Special case for submissions in a series called 'Beiheft'
+            if row.series_position.startswith('Beiheft'):
+                prefix = 1,
+            else:
+                prefix = 0,
+            return prefix + tuple(int(s) for s in re.findall(r'\d+', row.series_position))
 
         sort_parameters = {
             'seriesPosition-2': dict(key=extract_series_position, reverse=True),
