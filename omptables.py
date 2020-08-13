@@ -9,7 +9,7 @@ LICENSE.md
 from gluon import Field, DAL, IS_DATETIME
 
 
-def define_omp_tables(db: DAL):
+def define_omp_tables(db):
     """
     Define table schema for OMP 3.1.2
     Args:
