@@ -12,6 +12,8 @@ from locale import getlocale, setlocale, getdefaultlocale, LC_TIME
 from os.path import exists, join
 from re import findall
 from urllib.request import urlopen
+from io import StringIO
+from html.parser import HTMLParser
 
 
 ONIX_INPUT_DATE_MAP = {
@@ -379,3 +381,39 @@ def formatDoi(doi):
       return the full URL: https://doi.org/10.1234/abc123
     """
     return "https://doi.org/" + doi
+
+
+class MLStripper(HTMLParser):
+
+    def error(self, message):
+        raise ValueError("MLStripper parse error" + message)
+        pass
+
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.strict = False
+        self.convert_charrefs = True
+        self.text = StringIO()
+
+    def handle_data(self, d):
+        self.text.write(d)
+
+    def get_data(self):
+        return self.text.getvalue()
+
+
+def strip_tags(html):
+    """
+    Removes HTML tags using Python's HTMLParser
+
+    Copied from StackOverflow answer https://stackoverflow.com/a/925630/8938233 posted by a user named Eloff.
+    Args:
+        html: String possibly containing HTML tags
+
+    Returns:
+        String without the tags but containing the text values
+    """
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
