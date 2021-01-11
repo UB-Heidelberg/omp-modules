@@ -182,10 +182,10 @@ def formatContributors(contributors, max_contributors=3, et_al=True, reverse_nam
         if with_and and len(contributors) > 1:
             and_literal = current.T.translate('and', {})
             res = "{} {} {}".format(
-                " , ".join([formatName(c.settings, reverse=reverse_name) for c in contributors[:-1]]),
+                ", ".join([formatName(c.settings, reverse=reverse_name) for c in contributors[:-1]]),
                 and_literal, formatName(contributors[-1].settings, reverse=reverse_name))
         else:
-            res = " , ".join([formatName(c.settings, reverse=reverse_name) for c in contributors])
+            res = ", ".join([formatName(c.settings, reverse=reverse_name) for c in contributors])
 
     return res
 
