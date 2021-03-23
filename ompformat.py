@@ -271,7 +271,7 @@ def dateFromRow(date_row):
     else:
         return datetime(1, 1, 1)
 
-def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
+def downloadLink(request, file_row, url="", override_op='', attachment=False):
     """
     Generate download link from file info.
     """
@@ -290,18 +290,18 @@ def downloadLink(request, file_row, url="", vgwPublicCode=None, vgwServer=None):
     else:
         op = 'download'
 
-    redirect = ""
-    if vgwPublicCode and op == 'download':
-        if not vgwServer:
-            vgwServer = "https://vg07.met.vgwort.de/na"
-        # check, if server is available
-        if urlopen(vgwServer).getcode() == 200:
-            redirect = join(vgwServer, vgwPublicCode)+"?l="+url
-    return redirect+URL(
+    if override_op:
+        op = override_op
+
+    url_vars = dict()
+    if attachment:
+        url_vars['attachment'] = True
+    return URL(
         a=request.application,
         c='reader',
         f=op,
         args=[file_row.submission_id, file_name],
+        vars=url_vars
         )
 
 def coverImageLink(request, press_id, submission_id):
