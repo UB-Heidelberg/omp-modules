@@ -129,7 +129,7 @@ class SiteMap:
         :param path:
         :return: string
         """
-        if myconf['web']['application'] not in self.ignore_apps:
+        if myconf['web']['application'] not in self.ignore_apps and not path.startswith('/' + myconf['web']['application']):
             loc = '{}/{}{}'.format(myconf['web']['url'], myconf['web']['application'], path)
         else:
             loc = '{}{}'.format(myconf['web']['url'], path)
