@@ -14,6 +14,7 @@ from string import Template
 from urllib.request import urlopen
 
 from ompdal import OMPDAL
+from ompformat import downloadLink
 
 ompdal = OMPDAL(db, myconf)
 
@@ -83,12 +84,7 @@ class SiteMap:
         :param file_row:
         :return: stirng
         """
-        type = file_row.original_file_name.split('.').pop().strip().lower()
-        items = [file_row.submission_id, file_row.genre_id, file_row.file_id, file_row.revision, file_row.file_stage, file_row.date_uploaded.strftime('%Y%m%d'), ]
-        file_name = '-'.join([str(i) for i in items]) + '.' + type
-        op = 'index' if type == 'xml' or type == 'html' else 'download'
-
-        file_path = (join('/reader', op, str(file_row.submission_id), file_name), file_row.date_modified.date(), 0.4)
+        file_path = (downloadLink(file_row), file_row.date_modified.date(), 0.4)
         return file_path
 
 
@@ -261,8 +257,12 @@ class SiteMap:
             if self.getTableSetting(chapter_settings_rows, 'pub-id::doi'):
                 result.append(('/catalog/book/{}/c{}'.format(s['submission_id'], c['chapter_id']), s['date_submitted'].date(), self.chapters_priority))
 
+                chapter_file_entries = []
                 for pf in formats:
-                   result += [self.createFileEntry(ompdal.getLatestRevisionOfChapterFileByPublicationFormat(c['chapter_id'], pf.publication_format_id), ) for pf in formats]
+                    chapter_file_row = ompdal.getLatestRevisionOfChapterFileByPublicationFormat(c['chapter_id'], pf.publication_format_id)
+                    if chapter_file_row:
+                        chapter_file_entries.append(self.createFileEntry(chapter_file_row))
+                result += chapter_file_entries
 
         return result
 
