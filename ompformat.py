@@ -271,7 +271,8 @@ def dateFromRow(date_row):
     else:
         return datetime(1, 1, 1)
 
-def downloadLink(request, file_row, url="", override_op='', attachment=False):
+
+def downloadLink(file_row, override_op='', attachment=False):
     """
     Generate download link from file info.
     """
@@ -285,19 +286,17 @@ def downloadLink(request, file_row, url="", override_op='', attachment=False):
                        ]
     file_name = '-'.join([str(i) for i in file_name_items])+'.'+file_type
 
-    if file_type == 'xml' or file_type == 'html':
+    if override_op in ('index', 'download'):
+        op = override_op
+    elif file_type == 'xml' or file_type == 'html':
         op = 'index'
     else:
         op = 'download'
-
-    if override_op:
-        op = override_op
 
     url_vars = dict()
     if attachment:
         url_vars['attachment'] = True
     return URL(
-        a=request.application,
         c='reader',
         f=op,
         args=[file_row.submission_id, file_name],
