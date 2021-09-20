@@ -22,7 +22,7 @@ importlib.reload(sys)
 
 # sys.setdefaultencoding('utf-8')
 from ompdal import OMPDAL
-
+#'Bitte nicht buchen, Rechnung folgt.',
 
 class PDFOrder():
     ADDRESS_FIELDS = ['adresszeile1', 'adresszeile2', 'adresszeile3', 'strasse_und_nr']
@@ -34,7 +34,7 @@ class PDFOrder():
         4: ('Logo_Crossasia.png', 150, 262, 50, 30),
         6: ('Logo_heiUP.png', 61, 244, 135, 55)
     }
-    FOOTER = ['Bitte nicht buchen, Rechnung folgt.',
+    FOOTER = [
               'Bei Rückfragen wenden Sie sich bitte an <a '
               'href="mailto:heiUP@ub.uni-heidlberg.de"><u><font '
               'color="blue">heiUP@ub.uni-heidelberg.de</font></u></a>, '
@@ -55,6 +55,7 @@ class PDFOrder():
 
         self.IM_PATH = join(request.env.web2py_path, PDFOrder.IMG_PATH)
         self.record = record.as_dict()
+
 
         self.submission_id = int(self.record.get('submission_id'))
 
@@ -115,11 +116,16 @@ class PDFOrder():
 
     def createFooter(self):
         customer_notice = ''
+        invoice_check = self.record.get('invoice_check')
         if self.record.get('customer_notice'):
             customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
+
         for i, line in enumerate(customer_notice):
             self.drawParagraph(line, 9, "Normal", 230 - len(customer_notice) * 5 + 5 * i)
-
+        if invoice_check:
+            invc = textwrap.wrap("Bitte nicht buchen, Rechnung folgt.", 120)
+            for i, line in enumerate(invc):
+                self.drawParagraph(line, 9, "Normal", 245 - len(invc) * 5 + 5 * i)
         for i, part in enumerate(PDFOrder.FOOTER):
             self.drawParagraph(part, 9, "Normal", 250 + 10 * i)
 
