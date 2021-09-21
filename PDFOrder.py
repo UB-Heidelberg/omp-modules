@@ -117,7 +117,7 @@ class PDFOrder():
     def createFooter(self):
         customer_notice = ''
         invoice_check = self.record.get('invoice_check')
-        print("invoice_check: ", invoice_check)
+        #print("invoice_check: ", invoice_check)
         if self.record.get('customer_notice'):
             customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
 
