@@ -117,12 +117,13 @@ class PDFOrder():
     def createFooter(self):
         customer_notice = ''
         invoice_check = self.record.get('invoice_check')
+        print("invoice_check: ", invoice_check)
         if self.record.get('customer_notice'):
             customer_notice = textwrap.wrap(str(self.record.get('customer_notice')), 120)
 
         for i, line in enumerate(customer_notice):
             self.drawParagraph(line, 9, "Normal", 230 - len(customer_notice) * 5 + 5 * i)
-        if invoice_check:
+        if invoice_check == True:
             invc = textwrap.wrap("Bitte nicht buchen, Rechnung folgt.", 120)
             for i, line in enumerate(invc):
                 self.drawParagraph(line, 9, "Normal", 245 - len(invc) * 5 + 5 * i)
