@@ -123,7 +123,7 @@ class PDFOrder():
 
         for i, line in enumerate(customer_notice):
             self.drawParagraph(line, 9, "Normal", 230 - len(customer_notice) * 5 + 5 * i)
-        if invoice_check == True:
+        if invoice_check:
             invc = textwrap.wrap("Bitte nicht buchen, Rechnung folgt.", 120)
             for i, line in enumerate(invc):
                 self.drawParagraph(line, 9, "Normal", 245 - len(invc) * 5 + 5 * i)
