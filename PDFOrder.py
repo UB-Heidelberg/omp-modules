@@ -34,8 +34,7 @@ class PDFOrder():
         4: ('Logo_Crossasia.png', 150, 262, 50, 30),
         6: ('Logo_heiUP.png', 61, 244, 135, 55)
     }
-    FOOTER = [
-              'Bei Rückfragen wenden Sie sich bitte an <a '
+    FOOTER = ['Bei Rückfragen wenden Sie sich bitte an <a '
               'href="mailto:heiUP@ub.uni-heidlberg.de"><u><font '
               'color="blue">heiUP@ub.uni-heidelberg.de</font></u></a>, '
               'Tel.: +49 6221 542383.'
