@@ -48,7 +48,6 @@ class OMPCSL():
         editors = [OMPItem(e, OMPSettings(self.db.getAuthorSettings(e.author_id))) for e in
                    self.db.getEditorsBySubmission(submission_id)]
 
-        # Do not mention authors if the submission has editors
         authors = [OMPItem(a, OMPSettings(self.db.getAuthorSettings(a.author_id))) for a in
                                       self.db.getActualAuthorsBySubmission(submission_id, filter_browse=True)]
 
