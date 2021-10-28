@@ -49,7 +49,7 @@ class OMPCSL():
                    self.db.getEditorsBySubmission(submission_id)]
 
         # Do not mention authors if the submission has editors
-        authors = [] if editors else [OMPItem(a, OMPSettings(self.db.getAuthorSettings(a.author_id))) for a in
+        authors = [OMPItem(a, OMPSettings(self.db.getAuthorSettings(a.author_id))) for a in
                                       self.db.getActualAuthorsBySubmission(submission_id, filter_browse=True)]
 
         date_published = None
