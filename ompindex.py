@@ -30,7 +30,6 @@ def author_names(search_initial, author_rows):
             authors.append(a)
         if initial and initial not in initials:
             author_index.append(initial)
-            print("author_index initial", initial.encode("unicode_escape"))
             initials.add(initial)
 
         prev_author = this_author
