@@ -310,7 +310,7 @@ class OMPDAL:
         Get all authors associated with the specified press regardless of their role.
         """
         # TODO This functionality could be covered by the search service
-        select_sql = 'SELECT au_given_names.setting_value as first_name, au_family_names.setting_value as last_name, a.submission_id'
+        select_sql = 'SELECT TRIM(au_given_names.setting_value) as first_name, TRIM(au_family_names.setting_value) as last_name, a.submission_id'
         from_sql = 'FROM author_settings au_given_names, author_settings au_family_names, authors a, submissions s'
         conditions = [
             's.context_id = {}'.format(press_id),
