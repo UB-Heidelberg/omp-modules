@@ -326,7 +326,7 @@ class OMPDAL:
             conditions.append('a.include_in_browse = 1')
 
         where_sql = 'WHERE ' + '\n AND '.join(conditions)
-        order_sql = 'ORDER BY last_name'
+        order_sql = 'ORDER BY last_name, first_name'
         sql = '\n'.join([
             select_sql,
             from_sql,
