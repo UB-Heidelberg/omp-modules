@@ -795,3 +795,9 @@ class OMPDAL:
         m = self.db.markets
         q = (m.publication_format_id == publication_format_id)
         return self.db(q).select(m.ALL)
+
+    def getPluginSettingsByNameAndPress(self, plugin_name, press_id):
+        ps = self.db.plugin_settings
+        q = ((ps.plugin_name == plugin_name) & (ps.context_id == press_id))
+
+        return self.db(q).select(ps.ALL)
