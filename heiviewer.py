@@ -1,10 +1,25 @@
 """
 
-Prepares all data necessary to display the heiviewer
+Prepares all data necessary to display the heiviewer and links to the reader page
 
 """
 from gluon import URL
-from ompdal import OMPDAL
+from ompdal import OMPDAL, OMPItem
+
+
+def is_enabled_for_publication_format(publication_format: OMPItem):
+    return publication_format.settings.getLocalizedValue('useHeiViewer', '') == '1'
+
+
+def build_reader_url(publication_format: OMPItem, full_file: OMPItem, chapter: OMPItem = None):
+    args = [
+        full_file.attributes.submission_id,
+        publication_format.attributes.publication_format_id,
+        full_file.attributes.file_id
+    ]
+    if chapter:
+        args.append(chapter.settings.getLocalizedValue('heiViewerChapterId', ''))
+    return URL(c='reader', f='index', args=args)
 
 
 def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMPDAL, chapter_id=None):
