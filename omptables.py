@@ -460,3 +460,15 @@ def define_omp_tables(db):
                     primarykey=['context_id', 'plugin_name', 'setting_name'],
                     migrate=False
                     )
+    db.define_table("genres",
+                    Field("genre_id", "integer"),
+                    Field("context_id", "integer"),
+                    Field("seq", "integer"),
+                    Field("enabled", "integer"),
+                    Field("category", "bigint"),
+                    Field("dependent", "integer"),
+                    Field("entry_key", "string"),
+                    Field("supplementary", "integer"),
+                    primarykey=['genre_id'],
+                    migrate=False
+                    )

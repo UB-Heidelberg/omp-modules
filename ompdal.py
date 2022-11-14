@@ -714,6 +714,23 @@ class OMPDAL:
         if res:
             return res.last()
 
+    def getLatestRevisionOfFileByPublicationFormatAndGenreKey(self, submission_id, publication_format_id, genre_key):
+        """
+        Get the latest revision of a file of genre "Book" for a given publication format.
+        """
+        sf = self.db.submission_files
+        g = self.db.genres
+        q = ((sf.submission_id == submission_id)
+             & (sf.file_stage == 10)
+             & (sf.assoc_id == publication_format_id)
+             & (sf.genre_id == g.genre_id)
+             & (g.entry_key == genre_key)
+             )
+
+        res = self.db(q).select(sf.ALL, orderby=sf.revision)
+        if res:
+            return res.last()
+
     def getReviewFilesByPublicationFormat(self, submission_id, publication_format_id):
         """
         Get the latest revision of a file of a review for a given publication format.
@@ -801,3 +818,11 @@ class OMPDAL:
         q = ((ps.plugin_name == plugin_name) & (ps.context_id == press_id))
 
         return self.db(q).select(ps.ALL)
+
+    def getGenreById(self, genre_id):
+        g = self.db.genres
+        return self.db(g.genre_id == genre_id).select(g.ALL)
+
+    def getGenresByPress(self, press_id):
+        g = self.db.genres
+        return self.db(g.context_id == press_id).select(g.ALL)

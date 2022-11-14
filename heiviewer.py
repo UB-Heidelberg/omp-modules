@@ -7,7 +7,7 @@ from gluon import URL
 from ompdal import OMPDAL, OMPItem
 
 
-def is_enabled_for_publication_format(publication_format: OMPItem):
+def is_enabled(publication_format: OMPItem):
     return publication_format.settings.getLocalizedValue('useHeiViewer', '') == '1'
 
 
