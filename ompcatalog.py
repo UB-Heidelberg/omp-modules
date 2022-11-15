@@ -1,10 +1,13 @@
+from typing import Iterable
+
+from ompdal import OMPItem
 from ompformat import haveMultipleAuthors, formatName, downloadLink
 from gluon import current, DIV, TD, A, URL, I
 
 import heiviewer
 
 
-def table_of_contents(submission_id, chapters, digital_publication_formats, locale):
+def table_of_contents(submission_id: int, chapters: Iterable[OMPItem], digital_publication_formats: Iterable[OMPItem], locale: str):
     T = current.T
     table_head = DIV(
         DIV(T('Contents'), _class="chapter_cell"), _class="chapter_row table_head")
