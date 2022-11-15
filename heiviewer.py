@@ -7,8 +7,11 @@ from gluon import URL
 from ompdal import OMPDAL, OMPItem
 
 
-def is_enabled(publication_format: OMPItem):
-    return publication_format.settings.getLocalizedValue('useHeiViewer', '') == '1'
+def is_enabled(publication_format: OMPItem, chapter: OMPItem = None):
+    pf_enabled = publication_format.settings.getLocalizedValue('useHeiViewer', '') == '1'
+    if chapter:
+        return pf_enabled and chapter.settings.getLocalizedValue('heiViewerChapterId', '') != ''
+    return pf_enabled
 
 
 def build_reader_url(publication_format: OMPItem, full_file: OMPItem, chapter: OMPItem = None):
@@ -17,7 +20,7 @@ def build_reader_url(publication_format: OMPItem, full_file: OMPItem, chapter: O
         publication_format.attributes.publication_format_id,
         full_file.attributes.file_id
     ]
-    if chapter:
+    if chapter and chapter.settings.getLocalizedValue('heiViewerChapterId', ''):
         args.append(chapter.settings.getLocalizedValue('heiViewerChapterId', ''))
     return URL(c='reader', f='index', args=args)
 

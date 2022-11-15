@@ -1,10 +1,11 @@
 from ompformat import haveMultipleAuthors, formatName, downloadLink
 from gluon import current, DIV, TD, A, URL, I
 
-T = current.T
+import heiviewer
 
 
 def table_of_contents(submission_id, chapters, digital_publication_formats, locale):
+    T = current.T
     table_head = DIV(
         DIV(T('Contents'), _class="chapter_cell"), _class="chapter_row table_head")
     table = DIV(table_head, _id="downloadTable")
@@ -20,7 +21,6 @@ def table_of_contents(submission_id, chapters, digital_publication_formats, loca
         c_title = c.settings.getLocalizedValue('title', locale)
         c_subtitle = c.settings.getLocalizedValue('subtitle', locale)
         c_pub_id_doi = c.settings._settings.get('pub-id::doi')
-        c_heiviewer_id = c.settings.getLocalizedValue('heiViewerChapterId', '')
         c_authors = c.associated_items.get('authors', [])
         c_files = c.associated_items.get('files', [])
         c_id = c.attributes.chapter_id
@@ -43,8 +43,8 @@ def table_of_contents(submission_id, chapters, digital_publication_formats, loca
             if format_name != 'EPUB':
                 files_cell = DIV(_class="chapter_cell")
                 chapter_row.append(files_cell)
-                if c_heiviewer_id and pf.settings.getLocalizedValue('useHeiViewer', ''):
-                    href = URL(c='reader', f='index', args=[submission_id, pf.attributes.publication_format_id, full_file.attributes.file_id, c_heiviewer_id])
+                if full_file and heiviewer.is_enabled(pf, c):
+                    href = heiviewer.build_reader_url(pf, full_file, c)
                     files_cell.append(DIV(A(I(_class="fa fa-html5"), _target="_target", _href=href), _class="chapter_file"))
                 elif c_files and pf.attributes.publication_format_id in c_files:
                     c_file = c_files.get(pf.attributes.publication_format_id)
