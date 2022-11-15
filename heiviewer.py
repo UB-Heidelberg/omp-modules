@@ -4,7 +4,7 @@ Prepares all data necessary to display the heiviewer and links to the reader pag
 
 """
 from gluon import URL
-from ompdal import OMPDAL, OMPItem
+from ompdal import OMPDAL, OMPItem, OMPSettings
 
 
 def is_enabled(publication_format: OMPItem, chapter: OMPItem = None):
@@ -25,7 +25,8 @@ def build_reader_url(publication_format: OMPItem, full_file: OMPItem, chapter: O
     return URL(c='reader', f='index', args=args)
 
 
-def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMPDAL, chapter_id=None):
+def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMPDAL, locale: str, settings,
+                      chapter_id=None):
     # pub_format = ompdal.getPublicationFormat(publication_format_id)
     # ompdal.getPublicationFormatSettings(publication_format_id)
     submission = ompdal.getSubmission(submission_id)
@@ -33,7 +34,9 @@ def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMP
     plugin_settings = {}
     for row in ompdal.getPluginSettingsByNameAndPress('heiviewerompgalleyplugin', submission.context_id):
         plugin_settings[row.setting_name] = row.setting_value
-
+    submission_settings = OMPSettings(ompdal.getSubmissionSettings(submission_id))
+    book_title = " ".join([submission_settings.getLocalizedValue('prefix', locale),
+                           submission_settings.getLocalizedValue('title', locale)])
     return {
         'submission_id': submission_id,
         'publication_format_id': publication_format_id,
@@ -46,4 +49,5 @@ def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMP
         'chapter_id': str(chapter_id) if chapter_id else '',
         'logo_url': plugin_settings['heiViewerLogoURL'],
         'backlink': URL(c='catalog', f='book', args=[submission_id]),
+        'page_title': "{} - {}".format(book_title, settings.title)
     }
