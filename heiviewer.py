@@ -49,5 +49,6 @@ def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMP
         'chapter_id': str(chapter_id) if chapter_id else '',
         'logo_url': plugin_settings['heiViewerLogoURL'],
         'backlink': URL(c='catalog', f='book', args=[submission_id]),
-        'page_title': "{} - {}".format(book_title, settings.title)
+        'page_title': "{} - {}".format(book_title, settings.title),
+        'locale': locale
     }
