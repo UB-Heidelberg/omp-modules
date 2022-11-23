@@ -54,35 +54,7 @@ def prepare_heiviewer(press_id, submission_id, publication_format_id, file_id, o
     url_args = [submission_id, publication_format_id, file_id]
     if chapter_id:
         url_args.append(chapter_id)
-
-    return {
-                 'api': {
-                          'endpoint': '',
-                          'endpointLogin': '',
-                          'endpointAnno': '',
-                          'endpointAnnoAuth': '',
-                          'endpointEditionen': '{{=editionservice_url}}',
-                          'hostname': hostname,
-                          'pathname': pathname,
-                          sid: '',
-                      },
-                      tei: {
-        edition: '{{=edition_id}}',
-        sigle: '{{=content_id}}',
-        baseURLMedia: '{{=base_url_media}}',
-        mediaURLMap: {{=XML(media_mapping)}},
-    },
-    textgranularity: '{{=granularity}}',
-    currentTextPartId: '{{=chapter_id}}',
-    logo: '{{=logo_url}}',
-    logolink: '{{=backlink}}',
-    backlink: '{{=backlink}}',
-    langlink: {
-        ger: '{{=langlink_ger}}',
-        eng: '{{=langlink_eng}}',
-    },
-    }
-
+    # All template variables for the heiviewer template
     return {
         'submission_id': submission_id,
         'publication_format_id': publication_format_id,
