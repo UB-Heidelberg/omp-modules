@@ -3,7 +3,7 @@
 Prepares all data necessary to display the heiviewer and links to the reader page
 
 """
-from gluon import URL
+from gluon import URL, HTTP
 from ompdal import OMPDAL, OMPItem, OMPSettings
 
 
@@ -25,18 +25,64 @@ def build_reader_url(publication_format: OMPItem, full_file: OMPItem, chapter: O
     return URL(c='reader', f='index', args=args)
 
 
-def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMPDAL, locale: str, settings,
+def load_and_check_settings(press_id, ompdal):
+    plugin_settings = {}
+    for row in ompdal.getPluginSettingsByNameAndPress('heiviewerompgalleyplugin', press_id):
+        plugin_settings[row.setting_name] = row.setting_value
+
+    if plugin_settings.get('enabled') != '1':
+        return None
+    if not plugin_settings.get('heiViewerEditionID') or not plugin_settings.get('heiViewerEditionServiceURL'):
+        return None
+    return plugin_settings
+
+
+def prepare_heiviewer(press_id, submission_id, publication_format_id, file_id, ompdal: OMPDAL, locale: str, settings,
                       chapter_id=None):
     # pub_format = ompdal.getPublicationFormat(publication_format_id)
     # ompdal.getPublicationFormatSettings(publication_format_id)
     submission = ompdal.getSubmission(submission_id)
+    if submission is None or submission.context_id != int(press_id):
+        raise HTTP(404)
     # setup Heiviewer
-    plugin_settings = {}
-    for row in ompdal.getPluginSettingsByNameAndPress('heiviewerompgalleyplugin', submission.context_id):
-        plugin_settings[row.setting_name] = row.setting_value
+    plugin_settings = load_and_check_settings(press_id, ompdal)
+    if not plugin_settings:
+        raise HTTP(500, "heiviewer not correctly configured for press")
     submission_settings = OMPSettings(ompdal.getSubmissionSettings(submission_id))
     book_title = " ".join([submission_settings.getLocalizedValue('prefix', locale),
                            submission_settings.getLocalizedValue('title', locale)])
+    url_args = [submission_id, publication_format_id, file_id]
+    if chapter_id:
+        url_args.append(chapter_id)
+
+    return {
+                 'api': {
+                          'endpoint': '',
+                          'endpointLogin': '',
+                          'endpointAnno': '',
+                          'endpointAnnoAuth': '',
+                          'endpointEditionen': '{{=editionservice_url}}',
+                          'hostname': hostname,
+                          'pathname': pathname,
+                          sid: '',
+                      },
+                      tei: {
+        edition: '{{=edition_id}}',
+        sigle: '{{=content_id}}',
+        baseURLMedia: '{{=base_url_media}}',
+        mediaURLMap: {{=XML(media_mapping)}},
+    },
+    textgranularity: '{{=granularity}}',
+    currentTextPartId: '{{=chapter_id}}',
+    logo: '{{=logo_url}}',
+    logolink: '{{=backlink}}',
+    backlink: '{{=backlink}}',
+    langlink: {
+        ger: '{{=langlink_ger}}',
+        eng: '{{=langlink_eng}}',
+    },
+    }
+
     return {
         'submission_id': submission_id,
         'publication_format_id': publication_format_id,
@@ -50,5 +96,7 @@ def prepare_heiviewer(submission_id, publication_format_id, file_id, ompdal: OMP
         'logo_url': plugin_settings['heiViewerLogoURL'],
         'backlink': URL(c='catalog', f='book', args=[submission_id]),
         'page_title': "{} - {}".format(book_title, settings.title),
-        'locale': locale
+        'locale': locale,
+        'langlink_ger': URL(args=url_args, vars={'lang': 'de'}),
+        'langlink_eng': URL(args=url_args, vars={'lang': 'en'})
     }
