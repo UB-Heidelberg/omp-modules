@@ -3,7 +3,7 @@
 """
 import unicodedata
 
-from gluon.html import P, DIV, A, URL, H5, SPAN, BR
+from gluon.html import DIV, A, URL, SPAN, BR, H2
 from gluon import current
 T = current.T
 
@@ -43,7 +43,7 @@ def author_names(search_initial, author_rows):
     author_list = DIV()
     for i, a in enumerate(authors):
         if a.get('initial'):
-            author_list.append(H5(a['initial']))
+            author_list.append(H2(a['initial'], _style='font-size: 21px; margin-bottom: 10px'))
         pass
         book_url = URL('catalog', 'book', args=a['submission_id'])
         if a['index'] == 1:
