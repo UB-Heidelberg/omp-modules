@@ -769,7 +769,7 @@ class OMPDAL:
         # See OMP source file : lib/pkp/classes/core/PKPApplication.inc.php:28
         q = (sf.assoc_id == submission_file_id) & (sf.assoc_type == 515) & (sf.file_stage == 17)
         files = {}
-        for row in self.db(q).select(sf.ALL, orderby=sf.revision):
+        for row in self.db(q).select(sf.ALL, orderby=~sf.revision):
             if row.file_id not in files:
                 files[row.file_id] = row
         return list(files.values())
