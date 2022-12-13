@@ -43,7 +43,7 @@ def build_media_mapping(file_id, submission_locale, ompdal):
     dependent_file_rows = ompdal.getDependentFilesBySubmissionFileId(file_id)
     for file in dependent_file_rows:
         url = str(file)
-        map[file_id] = url
+        map[file.file_id] = url
     for settings_row in ompdal.getSubmissionFileSettingsByIds(map.keys(), locale=submission_locale):
         if settings_row.setting_name == 'name':
             # Set the file name stored in the file settings as key of the dict
