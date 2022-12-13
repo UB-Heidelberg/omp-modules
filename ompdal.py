@@ -768,10 +768,11 @@ class OMPDAL:
         # assoc_type 515 is ASSOC_TYPE_SUBMISSION_FILE
         # See OMP source file : lib/pkp/classes/core/PKPApplication.inc.php:28
         q = (sf.assoc_id == submission_file_id) & (sf.assoc_type == 515) & (sf.file_stage == 17)
-        fields = [sf.file_id, 'MAX(revision) as revision', sf.submission_id, sf.genre_id, sf.original_file_name,
-                  sf.date_uploaded, sf.file_stage]
-        rows = self.db(q).select(*fields, groupby='file_id, submission_id, genre_id, original_file_name, date_uploaded, file_stage')
-        return rows
+        files = {}
+        for row in self.db(q).select(sf.ALL, orderby=sf.revision):
+            if row.file_id not in files:
+                files[row.file_id] = row
+        return list(files.values())
 
     def getSubmissionFileSettingsByIds(self, file_ids, locale=None):
         """
