@@ -758,6 +758,32 @@ class OMPDAL:
 
         return self.db(q).select(sf.ALL)
 
+    def getDependentFilesBySubmissionFileId(self, submission_file_id):
+        """
+
+        :param submission_file_id:
+        :return:
+        """
+        sf = self.db.submission_files
+        # assoc_type 515 is ASSOC_TYPE_SUBMISSION_FILE
+        # See OMP source file : lib/pkp/classes/core/PKPApplication.inc.php:28
+        q = (sf.assoc_id == submission_file_id) & (sf.assoc_type == 515) & (sf.file_stage == 17)
+        fields = [sf.file_id, 'MAX(revision) as revision', sf.submission_id, sf.genre_id, sf.original_file_name,
+                  sf.date_uploaded, sf.file_stage]
+        rows = self.db(q).select(*fields, groupby='file_id, submission_id, genre_id, original_file_name, date_uploaded, file_stage')
+        return rows
+
+    def getSubmissionFileSettingsByIds(self, file_ids, locale=None):
+        """
+        Get settings for a given submission file.
+        """
+        sfs = self.db.submission_file_settings
+        q = (sfs.file_id.belongs(file_ids))
+        if locale:
+            q &= (sfs.locale == locale)
+
+        return self.db(q).select(sfs.ALL)
+
     def getSubmissionFileSettings(self, file_id):
         """
         Get settings for a given submission file.

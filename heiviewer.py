@@ -5,6 +5,7 @@ Prepares all data necessary to display the heiviewer and links to the reader pag
 """
 from gluon import URL, HTTP
 from ompdal import OMPDAL, OMPItem, OMPSettings
+import ompformat
 
 
 def is_enabled(publication_format: OMPItem, chapter: OMPItem = None):
@@ -37,6 +38,21 @@ def load_and_check_settings(press_id, ompdal):
     return plugin_settings
 
 
+def build_media_mapping(file_id, submission_locale, ompdal):
+    map = {}
+    dependent_file_rows = ompdal.getDependentFilesBySubmissionFileId(file_id)
+    for file in dependent_file_rows:
+        url = ompformat.downloadLink(file, override_op='download')
+        map[file_id] = url
+    for settings_row in ompdal.getSubmissionFileSettingsByIds(map.keys(), locale=submission_locale):
+        if settings_row.setting_name == 'name':
+            # Set the file name stored in the file settings as key of the dict
+            # We want to map "filename in OMP" -> "download URL for OMP Portal"
+            map[settings_row.setting_value] = map[settings_row.file_id]
+            map.pop(settings_row.file_id)
+    return map
+
+
 def prepare_heiviewer(press_id, submission_id, publication_format_id, file_id, ompdal: OMPDAL, locale: str, settings,
                       chapter_id=None):
     # pub_format = ompdal.getPublicationFormat(publication_format_id)
@@ -61,7 +77,7 @@ def prepare_heiviewer(press_id, submission_id, publication_format_id, file_id, o
         'editionservice_url': plugin_settings['heiViewerEditionServiceURL'],
         'edition_id': plugin_settings['heiViewerEditionID'],
         'base_url_media': URL(c='reader', f='download_image', args=[submission_id]),
-        'media_mapping': {},
+        'media_mapping': build_media_mapping(file_id, submission.locale, ompdal),
         'content_id': "{}_{}_{}".format(submission_id, publication_format_id, file_id),
         'granularity': 'chapter' if chapter_id else 'text',
         'chapter_id': str(chapter_id) if chapter_id else '',
