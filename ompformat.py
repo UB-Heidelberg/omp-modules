@@ -79,8 +79,8 @@ def formatAttribution(editors, authors, translators, chapter_authors):
         parts.append("{} {}".format(formatContributors(editors, max_contributors=4), suffix))
     if authors:
         parts.append(formatContributors(authors, max_contributors=4))
-    if not parts:
-        # No editor or authors assgined. Display chapter authors
+    if not parts and chapter_authors:
+        # No editor or authors assigned. Display chapter authors if any have been entered
         parts.append(formatContributors(chapter_authors, max_contributors=4))
     if translators:
         parts.append("{} {}".format(formatContributors(translators, max_contributors=4),
