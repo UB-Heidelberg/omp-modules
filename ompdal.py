@@ -714,6 +714,23 @@ class OMPDAL:
         if res:
             return res.last()
 
+    def getLatestRevisionOfFileByPublicationFormatAndGenreKey(self, submission_id, publication_format_id, genre_key):
+        """
+        Get the latest revision of a file of genre "Book" for a given publication format.
+        """
+        sf = self.db.submission_files
+        g = self.db.genres
+        q = ((sf.submission_id == submission_id)
+             & (sf.file_stage == 10)
+             & (sf.assoc_id == publication_format_id)
+             & (sf.genre_id == g.genre_id)
+             & (g.entry_key == genre_key)
+             )
+
+        res = self.db(q).select(sf.ALL, orderby=sf.revision)
+        if res:
+            return res.last()
+
     def getReviewFilesByPublicationFormat(self, submission_id, publication_format_id):
         """
         Get the latest revision of a file of a review for a given publication format.
@@ -740,6 +757,33 @@ class OMPDAL:
         q = (sf.submission_id == submission_id)
 
         return self.db(q).select(sf.ALL)
+
+    def getDependentFilesBySubmissionFileId(self, submission_file_id):
+        """
+
+        :param submission_file_id:
+        :return:
+        """
+        sf = self.db.submission_files
+        # assoc_type 515 is ASSOC_TYPE_SUBMISSION_FILE
+        # See OMP source file : lib/pkp/classes/core/PKPApplication.inc.php:28
+        q = (sf.assoc_id == submission_file_id) & (sf.assoc_type == 515) & (sf.file_stage == 17)
+        files = {}
+        for row in self.db(q).select(sf.ALL, orderby=~sf.revision):
+            if row.file_id not in files:
+                files[row.file_id] = row
+        return list(files.values())
+
+    def getSubmissionFileSettingsByIds(self, file_ids, locale=None):
+        """
+        Get settings for a given submission file.
+        """
+        sfs = self.db.submission_file_settings
+        q = (sfs.file_id.belongs(file_ids))
+        if locale:
+            q &= (sfs.locale == locale)
+
+        return self.db(q).select(sfs.ALL)
 
     def getSubmissionFileSettings(self, file_id):
         """
@@ -795,3 +839,17 @@ class OMPDAL:
         m = self.db.markets
         q = (m.publication_format_id == publication_format_id)
         return self.db(q).select(m.ALL)
+
+    def getPluginSettingsByNameAndPress(self, plugin_name, press_id):
+        ps = self.db.plugin_settings
+        q = ((ps.plugin_name == plugin_name) & (ps.context_id == press_id))
+
+        return self.db(q).select(ps.ALL)
+
+    def getGenreById(self, genre_id):
+        g = self.db.genres
+        return self.db(g.genre_id == genre_id).select(g.ALL)
+
+    def getGenresByPress(self, press_id):
+        g = self.db.genres
+        return self.db(g.context_id == press_id).select(g.ALL)

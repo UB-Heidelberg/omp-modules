@@ -303,6 +303,7 @@ def downloadLink(file_row, override_op='', attachment=False):
         vars=url_vars
         )
 
+
 def coverImageLink(request, press_id, submission_id):
     """
     Check, if cover image for a given submission exists, and build link.

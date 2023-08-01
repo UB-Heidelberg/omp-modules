@@ -451,3 +451,24 @@ def define_omp_tables(db):
                     migrate=False,
                     primarykey=["controlled_vocab_entry_id", "locale", "setting_name"],
                     )
+    db.define_table("plugin_settings",
+                    Field("context_id", "integer"),
+                    Field("plugin_name", "string"),
+                    Field("setting_name", "string"),
+                    Field("setting_value", "string"),
+                    Field("setting_type", "string"),
+                    primarykey=['context_id', 'plugin_name', 'setting_name'],
+                    migrate=False
+                    )
+    db.define_table("genres",
+                    Field("genre_id", "integer"),
+                    Field("context_id", "integer"),
+                    Field("seq", "integer"),
+                    Field("enabled", "integer"),
+                    Field("category", "bigint"),
+                    Field("dependent", "integer"),
+                    Field("entry_key", "string"),
+                    Field("supplementary", "integer"),
+                    primarykey=['genre_id'],
+                    migrate=False
+                    )
